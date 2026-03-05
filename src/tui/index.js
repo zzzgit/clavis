@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { render } from 'ink';
-import App from './components/App.js';
+import App from './components/App.jsx';
 import TokenStorage from '../services/TokenStorage.js';
 
 async function main() {

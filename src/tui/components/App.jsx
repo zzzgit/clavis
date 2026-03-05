@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import TokenTable from './TokenTable.js';
-import EditForm from './EditForm.js';
-import HelpPanel from './HelpPanel.js';
-import Header from './Header.js';
-import Footer from './Footer.js';
+import { Box } from 'ink';
+import TokenTable from './TokenTable.jsx';
+import EditForm from './EditForm.jsx';
+import HelpPanel from './HelpPanel.jsx';
+import Header from './Header.jsx';
+import Footer from './Footer.jsx';
 
 function App({ tokens: initialTokens, storage }) {
   const [tokens, setTokens] = useState(initialTokens);
@@ -81,35 +82,34 @@ function App({ tokens: initialTokens, storage }) {
     }
   };
   
-  // Create the UI using React.createElement
-  return React.createElement(
-    'Box',
-    { flexDirection: 'column', height: '100%' },
-    React.createElement(Header, { tokenCount: tokens.length, filter }),
-    React.createElement(
-      'Box',
-      { flexGrow: 1, flexDirection: 'column' },
-      isEditing
-        ? React.createElement(EditForm, {
-            token: selectedToken,
-            onSave: handleSaveToken,
-            onCancel: handleCancelEdit
-          })
-        : showHelp
-        ? React.createElement(HelpPanel, { onClose: () => setShowHelp(false) })
-        : React.createElement(TokenTable, {
-            tokens: filteredTokens,
-            selectedIndex,
-            onSelect: setSelectedIndex
-          })
-    ),
-    React.createElement(Footer, {
-      selectedToken,
-      isEditing,
-      showHelp,
-      onDelete: handleDeleteToken,
-      onKeyPress: handleKeyPress
-    })
+  return (
+    <Box flexDirection="column" height="100%">
+      <Header tokenCount={tokens.length} filter={filter} />
+      <Box flexGrow={1} flexDirection="column">
+        {isEditing ? (
+          <EditForm
+            token={selectedToken}
+            onSave={handleSaveToken}
+            onCancel={handleCancelEdit}
+          />
+        ) : showHelp ? (
+          <HelpPanel onClose={() => setShowHelp(false)} />
+        ) : (
+          <TokenTable
+            tokens={filteredTokens}
+            selectedIndex={selectedIndex}
+            onSelect={setSelectedIndex}
+          />
+        )}
+      </Box>
+      <Footer
+        selectedToken={selectedToken}
+        isEditing={isEditing}
+        showHelp={showHelp}
+        onDelete={handleDeleteToken}
+        onKeyPress={handleKeyPress}
+      />
+    </Box>
   );
 }
 
