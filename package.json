@@ -34,9 +34,13 @@
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.2",
+    "@types/node": "^25.3.3",
+    "@types/react": "^19.2.14",
     "eslint": "^9.39.3",
     "ink-gradient": "^4.0.0",
     "jest": "^30.2.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }
