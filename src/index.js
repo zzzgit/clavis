@@ -174,28 +174,17 @@ program
 
 program
   .command('tui')
-  .description('Start simple TUI interface')
+  .description('Start interactive TUI interface')
   .action(async () => {
-    console.clear()
-    console.log('=== Clavis TUI ===')
-    console.log('Simple TUI interface - Press "q" to quit')
-    console.log('----------------------------------------')
-    
-    emitKeypressEvents(process.stdin)
-    if (process.stdin.isTTY) {
-      process.stdin.setRawMode(true)
+    try {
+      // Import the simple TUI module
+      const startTUI = (await import('./tui-simple.js')).default;
+      await startTUI();
+    } catch (error) {
+      console.error('Failed to start TUI:', error.message);
+      console.error('Make sure all dependencies are installed: npm install');
+      process.exit(1);
     }
-    
-    process.stdin.on('keypress', (str, key) => {
-      if (key.name === 'q' || (key.ctrl && key.name === 'c')) {
-        console.log('\nExiting TUI...')
-        process.exit(0)
-      }
-    })
-    
-    console.log('TUI is running. Press "q" to exit.')
-    
-    process.stdin.resume()
   })
 
 program.parse()
