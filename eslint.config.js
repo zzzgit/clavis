@@ -1,4 +1,7 @@
+import js from "@eslint/js";
+
 export default [
+  js.configs.recommended,
   {
     files: ["**/*.js"],
     ignores: [
@@ -38,7 +41,6 @@ export default [
       "curly": ["error", "all"],
       "no-console": "off",
       "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-      "no-undef": "error",
       
       "semi": ["error", "never"],
       "quotes": ["error", "single", { "avoidEscape": true }],
