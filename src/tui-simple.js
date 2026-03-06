@@ -271,12 +271,18 @@ class SimpleTUI {
 
 		if (key.upArrow || str === 'k') {
 			const filteredTokens = this.getFilteredTokens()
-			this.selectedIndex = Math.max(0, this.selectedIndex - 1)
-			this.renderTable()
+			const newIndex = Math.max(0, this.selectedIndex - 1)
+			if (newIndex !== this.selectedIndex) {
+				this.selectedIndex = newIndex
+				this.renderTable()
+			}
 		} else if (key.downArrow || str === 'j') {
 			const filteredTokens = this.getFilteredTokens()
-			this.selectedIndex = Math.min(filteredTokens.length - 1, this.selectedIndex + 1)
-			this.renderTable()
+			const newIndex = Math.min(filteredTokens.length - 1, this.selectedIndex + 1)
+			if (newIndex !== this.selectedIndex) {
+				this.selectedIndex = newIndex
+				this.renderTable()
+			}
 		}
 	}
 
