@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box } from 'ink';
+import { Box, useInput } from 'ink';
 import TokenTable from './TokenTable.jsx';
 import EditForm from './EditForm.jsx';
 import HelpPanel from './HelpPanel.jsx';
@@ -23,7 +23,7 @@ function App({ tokens: initialTokens, storage }) {
   
   const selectedToken = filteredTokens[selectedIndex];
   
-  const handleKeyPress = (input, key) => {
+  useInput((input, key) => {
     if (isEditing) return;
     
     if (input === 'q' || (key.ctrl && input === 'c')) {
@@ -40,6 +40,11 @@ function App({ tokens: initialTokens, storage }) {
       return;
     }
     
+    if (input === 'd' && selectedToken) {
+      handleDeleteToken();
+      return;
+    }
+    
     if (input === 'f') {
       // TODO: Implement filter input
       return;
@@ -50,7 +55,7 @@ function App({ tokens: initialTokens, storage }) {
     } else if (key.downArrow || input === 'j') {
       setSelectedIndex(prev => Math.min(filteredTokens.length - 1, prev + 1));
     }
-  };
+  });
   
   const handleSaveToken = async (updatedToken) => {
     try {
@@ -107,7 +112,6 @@ function App({ tokens: initialTokens, storage }) {
         isEditing={isEditing}
         showHelp={showHelp}
         onDelete={handleDeleteToken}
-        onKeyPress={handleKeyPress}
       />
     </Box>
   );

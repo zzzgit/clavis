@@ -2,23 +2,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 
 function Footer({ selectedToken, isEditing, showHelp, onDelete, onKeyPress }) {
-  React.useEffect(() => {
-    const { stdin } = process;
-    
-    const handleKeyPress = (ch, key) => {
-      onKeyPress(ch, key);
-      
-      if (ch === 'd' && selectedToken && !isEditing && !showHelp) {
-        onDelete();
-      }
-    };
-    
-    stdin.on('keypress', handleKeyPress);
-    
-    return () => {
-      stdin.off('keypress', handleKeyPress);
-    };
-  }, [selectedToken, isEditing, showHelp, onDelete, onKeyPress]);
+  // Keyboard handling is now done in App component using useInput hook
   
   if (showHelp) {
     return (

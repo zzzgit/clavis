@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 
 function EditForm({ token, onSave, onCancel }) {
@@ -39,34 +39,26 @@ function EditForm({ token, onSave, onCancel }) {
     }
   }, [formData, token, onSave, onCancel]);
   
-  useEffect(() => {
-    const handleKeyPress = (ch, key) => {
-      if (key.name === 'escape') {
-        onCancel();
-        return;
-      }
-      
-      if (key.name === 'return') {
-        handleSave();
-        return;
-      }
-      
-      if (key.name === 'tab') {
-        if (key.shift) {
-          setActiveField(prev => (prev > 0 ? prev - 1 : fields.length - 1));
-        } else {
-          setActiveField(prev => (prev < fields.length - 1 ? prev + 1 : 0));
-        }
-        return;
-      }
-    };
+  useInput((input, key) => {
+    if (key.escape) {
+      onCancel();
+      return;
+    }
     
-    process.stdin.on('keypress', handleKeyPress);
+    if (key.return) {
+      handleSave();
+      return;
+    }
     
-    return () => {
-      process.stdin.off('keypress', handleKeyPress);
-    };
-  }, [fields.length, onCancel, handleSave]);
+    if (key.tab) {
+      if (key.shift) {
+        setActiveField(prev => (prev > 0 ? prev - 1 : fields.length - 1));
+      } else {
+        setActiveField(prev => (prev < fields.length - 1 ? prev + 1 : 0));
+      }
+      return;
+    }
+  });
   
   const handleChange = (field, value) => {
     setFormData(prev => ({
