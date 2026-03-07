@@ -5,6 +5,8 @@ import EditForm from './EditForm.jsx';
 import HelpPanel from './HelpPanel.jsx';
 import Header from './Header.jsx';
 import Footer from './Footer.jsx';
+import ConfirmDialog from './ConfirmDialog.jsx';
+import SearchInput from './SearchInput.jsx';
 
 function App({ tokens: initialTokens, storage }) {
   const [tokens, setTokens] = useState(initialTokens);
@@ -12,6 +14,8 @@ function App({ tokens: initialTokens, storage }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [filter, setFilter] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   
   const filteredTokens = filter
     ? tokens.filter(token => 
@@ -41,12 +45,12 @@ function App({ tokens: initialTokens, storage }) {
     }
     
     if (input === 'd' && selectedToken) {
-      handleDeleteToken();
+      setShowDeleteConfirm(true);
       return;
     }
     
     if (input === 'f') {
-      // TODO: Implement filter input
+      setShowSearch(true);
       return;
     }
     
@@ -76,22 +80,47 @@ function App({ tokens: initialTokens, storage }) {
   const handleDeleteToken = async () => {
     if (!selectedToken) return;
     
-    // TODO: Implement confirmation dialog
     try {
       await storage.delete(selectedToken.key);
       const updatedTokens = storage.getAll();
       setTokens(updatedTokens);
       setSelectedIndex(prev => Math.min(prev, updatedTokens.length - 1));
+      setShowDeleteConfirm(false);
     } catch (error) {
       console.error('Error deleting token:', error.message);
+      setShowDeleteConfirm(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
+  const handleSearch = (searchValue) => {
+    setFilter(searchValue);
+  };
+
+  const handleCancelSearch = () => {
+    setShowSearch(false);
   };
   
   return (
     <Box flexDirection="column" height="100%">
       <Header tokenCount={tokens.length} filter={filter} />
       <Box flexGrow={1} flexDirection="column">
-        {isEditing ? (
+        {showDeleteConfirm ? (
+          <ConfirmDialog
+            message={`Delete token "${selectedToken?.key}"? This action cannot be undone.`}
+            onConfirm={handleDeleteToken}
+            onCancel={handleCancelDelete}
+          />
+        ) : showSearch ? (
+          <SearchInput
+            initialValue={filter}
+            onSearch={handleSearch}
+            onCancel={handleCancelSearch}
+          />
+        ) : isEditing ? (
           <EditForm
             token={selectedToken}
             onSave={handleSaveToken}
@@ -111,7 +140,6 @@ function App({ tokens: initialTokens, storage }) {
         selectedToken={selectedToken}
         isEditing={isEditing}
         showHelp={showHelp}
-        onDelete={handleDeleteToken}
       />
     </Box>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 
-function Footer({ selectedToken, isEditing, showHelp, onDelete, onKeyPress }) {
+function Footer({ selectedToken, isEditing, showHelp }) {
   // Keyboard handling is now done in App component using useInput hook
   
   if (showHelp) {
@@ -56,7 +56,7 @@ function Footer({ selectedToken, isEditing, showHelp, onDelete, onKeyPress }) {
       
       <Box>
         <Text dimColor>
-          [↑↓/jk] Navigate • [e] Edit • [d] Delete • [?] Help • [q] Quit
+          [↑↓/jk] Navigate • [e] Edit • [d] Delete • [f] Search • [?] Help • [q] Quit
         </Text>
       </Box>
     </Box>
