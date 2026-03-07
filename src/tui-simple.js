@@ -138,37 +138,37 @@ class SimpleTUI {
 
 		let line = ''
 
-		// Status column
+		// Start with selection background if selected
 		if (isSelected) {
-			line += '\x1b[44m' // Blue background
+			line += '\x1b[44m\x1b[37m' // Blue background, white text
 		}
+
+		// Status column
 		line += status.color
 		line += ` ${status.char} `.padEnd(statusWidth)
 
 		// Key column
-		line += isSelected ? '\x1b[37m' : '\x1b[97m' // White/bright white
+		if (!isSelected) { line += '\x1b[97m' } // Bright white for key
 		line += this.truncateKey(token.key, key).padEnd(key)
 
 		// Tag column
-		line += isSelected ? '\x1b[37m' : '\x1b[96m' // White/cyan
+		if (!isSelected) { line += '\x1b[96m' } // Cyan for tag
 		line += this.truncateTag(token.tag, tag)
 
 		// Expires column
-		line += isSelected ? '\x1b[37m' : status.color
+		if (!isSelected) { line += status.color }
 		line += this.formatExpiration(token.expiration, expires)
 
 		// Created column
-		line += isSelected ? '\x1b[37m' : '\x1b[90m' // White/gray
+		if (!isSelected) { line += '\x1b[90m' } // Gray for created
 		line += this.formatCreatedAt(token.createdAt, created)
 
 		// Token column
-		line += isSelected ? '\x1b[37m' : '\x1b[90m' // White/gray
+		if (!isSelected) { line += '\x1b[90m' } // Gray for token
 		line += this.previewToken(token.token, tokenWidth)
 
-		if (isSelected) {
-			line += '\x1b[49m' // Reset background
-		}
-		line += '\x1b[0m' // Reset all
+		// Reset all styles
+		line += '\x1b[0m'
 
 		return line
 	}
@@ -213,7 +213,7 @@ class SimpleTUI {
 			console.log(`Selected: \x1b[36m${selectedToken.key}\x1b[0m`)
 		}
 
-		console.log('\x1b[90m[↑↓/jk] Navigate • [e] Edit • [d] Delete • [?] Help • [q] Quit\x1b[0m')
+		console.log('\x1b[90m[↑↓/jk] Navigate • [n] New • [e] Edit • [d] Delete • [?] Help • [q] Quit\x1b[0m')
 	}
 
 	async init() {
@@ -260,7 +260,7 @@ class SimpleTUI {
 		}
 
 		if (str === 'e') {
-			this.startEdit()
+			this.editToken()
 			return
 		}
 
@@ -269,16 +269,21 @@ class SimpleTUI {
 			return
 		}
 
+		if (str === 'n') {
+			this.createToken()
+			return
+		}
+
 		if (key.upArrow || str === 'k') {
-			const filteredTokens = this.getFilteredTokens()
+			const _filteredTokens = this.getFilteredTokens()
 			const newIndex = Math.max(0, this.selectedIndex - 1)
 			if (newIndex !== this.selectedIndex) {
 				this.selectedIndex = newIndex
 				this.renderTable()
 			}
 		} else if (key.downArrow || str === 'j') {
-			const filteredTokens = this.getFilteredTokens()
-			const newIndex = Math.min(filteredTokens.length - 1, this.selectedIndex + 1)
+			const _filteredTokens = this.getFilteredTokens()
+			const newIndex = Math.min(_filteredTokens.length - 1, this.selectedIndex + 1)
 			if (newIndex !== this.selectedIndex) {
 				this.selectedIndex = newIndex
 				this.renderTable()
@@ -304,7 +309,8 @@ class SimpleTUI {
 		console.log('\x1b[33mNavigation:\x1b[0m')
 		console.log('  ↑ / k      Move selection up')
 		console.log('  ↓ / j      Move selection down')
-		console.log('  Enter / e  Edit selected token')
+		console.log('  n          Create new token')
+		console.log('  e          Edit selected token')
 		console.log('  d          Delete selected token')
 		console.log('  ?          Show/hide this help')
 		console.log('  q / Ctrl+C Quit application')
@@ -317,14 +323,14 @@ class SimpleTUI {
 		console.log('\x1b[90mPress any key to return...\x1b[0m')
 
 		// Wait for any key
-		const handler = (str, key) => {
+		const handler = (_str, _key) => {
 			process.stdin.off('keypress', handler)
 			this.renderTable()
 		}
 		process.stdin.once('keypress', handler)
 	}
 
-	startEdit() {
+	async editToken() {
 		const filteredTokens = this.getFilteredTokens()
 		const selectedToken = filteredTokens[this.selectedIndex]
 
@@ -334,16 +340,69 @@ class SimpleTUI {
 		console.log(`\x1b[1mEditing Token: ${selectedToken.key}\x1b[0m`)
 		console.log('='.repeat(this.terminalWidth))
 		console.log()
-		console.log('Key cannot be changed (create new token instead)')
+		console.log('\x1b[33mKey cannot be changed (create new token instead)\x1b[0m')
+		console.log('Press Enter to keep current value')
 		console.log()
-		console.log('Press any key to return to table view...')
 
-		// For now, just return to table view
-		const handler = (str, key) => {
-			process.stdin.off('keypress', handler)
-			this.renderTable()
+		const readline = createInterface({
+			input: process.stdin,
+			output: process.stdout
+		})
+
+		const askQuestion = (question, defaultValue = '') => new Promise((resolve) => {
+			readline.question(question, (answer) => {
+				resolve(answer.trim() || defaultValue)
+			})
+		})
+
+		try {
+			console.log('\x1b[33mCurrent values:\x1b[0m')
+			console.log(`Token: ${selectedToken.token.slice(0, 8)}...${selectedToken.token.slice(-4)}`)
+			console.log(`Expiration: ${selectedToken.expiration || 'Never'}`)
+			console.log(`Tag: ${selectedToken.tag || '(none)'}`)
+			console.log(`Comment: ${selectedToken.comment || '(none)'}`)
+			console.log()
+
+			console.log('\x1b[33mEnter new values:\x1b[0m')
+			const token = await askQuestion(`Token [${selectedToken.token.slice(0, 8)}...${selectedToken.token.slice(-4)}]: `, selectedToken.token)
+			const expiration = await askQuestion(`Expiration (YYYY-MM-DD) [${selectedToken.expiration || 'Never'}]: `, selectedToken.expiration || '')
+			const tag = await askQuestion(`Tag [${selectedToken.tag || ''}]: `, selectedToken.tag)
+			const comment = await askQuestion(`Comment [${selectedToken.comment || ''}]: `, selectedToken.comment)
+
+			const updates = {}
+			if (token !== selectedToken.token) { updates.token = token }
+			if (expiration !== (selectedToken.expiration || '')) { updates.expiration = expiration || null }
+			if (tag !== selectedToken.tag) { updates.tag = tag }
+			if (comment !== selectedToken.comment) { updates.comment = comment }
+
+			if (Object.keys(updates).length > 0) {
+				const updatedToken = await this.storage.update(selectedToken.key, updates)
+				this.tokens = this.storage.getAll()
+				console.log()
+				console.log(`\x1b[32m✓ Token "${updatedToken.key}" updated successfully\x1b[0m`)
+			} else {
+				console.log()
+				console.log('\x1b[33mNo changes made\x1b[0m')
+			}
+		} catch (error) {
+			console.log()
+			console.log(`\x1b[31m✗ Error: ${error.message}\x1b[0m`)
+			console.log('\x1b[33mPress any key to try again...\x1b[0m')
+			
+			// Wait for key press and retry
+			const handler = (_str, _key) => {
+				process.stdin.off('keypress', handler)
+				readline.close()
+				this.editToken()
+			}
+			process.stdin.once('keypress', handler)
+			return
+		} finally {
+			readline.close()
+			setTimeout(() => {
+				this.renderTable()
+			}, 1500)
 		}
-		process.stdin.once('keypress', handler)
 	}
 
 	async deleteToken() {
@@ -387,7 +446,69 @@ class SimpleTUI {
 		})
 	}
 
-	handleEditMode(str, key) {
+	async createToken() {
+		console.clear()
+		console.log('\x1b[1mCreate New Token\x1b[0m')
+		console.log('='.repeat(this.terminalWidth))
+		console.log()
+
+		const readline = createInterface({
+			input: process.stdin,
+			output: process.stdout
+		})
+
+		const askQuestion = (question, defaultValue = '') => new Promise((resolve) => {
+			readline.question(question, (answer) => {
+				resolve(answer.trim() || defaultValue)
+			})
+		})
+
+		try {
+			console.log('\x1b[33mRequired fields:\x1b[0m')
+			const key = await askQuestion('Key (e.g., "api.github.com"): ')
+			const token = await askQuestion('Token: ')
+
+			console.log()
+			console.log('\x1b[33mOptional fields (press Enter to skip):\x1b[0m')
+			const expiration = await askQuestion('Expiration date (YYYY-MM-DD): ', '')
+			const tag = await askQuestion('Tag: ', '')
+			const comment = await askQuestion('Comment: ', '')
+
+			const tokenData = {
+				key,
+				token,
+				expiration: expiration || null,
+				tag,
+				comment
+			}
+
+			const newToken = await this.storage.create(tokenData)
+			this.tokens = this.storage.getAll()
+			
+			console.log()
+			console.log(`\x1b[32m✓ Token "${newToken.key}" created successfully\x1b[0m`)
+		} catch (error) {
+			console.log()
+			console.log(`\x1b[31m✗ Error: ${error.message}\x1b[0m`)
+			console.log('\x1b[33mPress any key to try again...\x1b[0m')
+			
+			// Wait for key press and retry
+			const handler = (_str, _key) => {
+				process.stdin.off('keypress', handler)
+				readline.close()
+				this.createToken()
+			}
+			process.stdin.once('keypress', handler)
+			return
+		} finally {
+			readline.close()
+			setTimeout(() => {
+				this.renderTable()
+			}, 1500)
+		}
+	}
+
+	handleEditMode(_str, key) {
 		// Edit mode handling would go here
 		// For now, just exit edit mode on Escape
 		if (key.name === 'escape') {
