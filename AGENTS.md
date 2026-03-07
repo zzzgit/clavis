@@ -69,11 +69,13 @@ Clavis is a token management system with a TUI interface. The codebase uses mode
 ```
 clavis/
 ├── src/
-│   ├── tui-simple.js    # Main TUI application
-│   └── services/        # Business logic and storage
-├── tests/               # Test files
-├── package.json         # Project dependencies
-└── AGENTS.md           # This file
+│   ├── tui/            # React-based TUI application
+│   │   ├── index.js    # TUI entry point
+│   │   └── components/ # React components
+│   └── services/       # Business logic and storage
+├── tests/              # Test files
+├── package.json        # Project dependencies
+└── AGENTS.md          # This file
 ```
 
 ## Common Patterns
@@ -141,7 +143,7 @@ npm run format
 npm test
 
 # Start TUI application
-node src/tui-simple.js
+npm run dev:tui
 ```
 
 Remember: Consistency is key. When in doubt, look at existing code for guidance.

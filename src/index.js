@@ -177,8 +177,8 @@ program
 	.description('Start interactive TUI interface')
 	.action(async () => {
 		try {
-			// Import the simple TUI module
-			const startTUI = (await import('./tui-simple.js')).default
+			// Import the React TUI module
+			const startTUI = (await import('./tui/index.js')).default
 			await startTUI()
 		} catch (error) {
 			console.error('Failed to start TUI:', error.message)
