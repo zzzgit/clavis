@@ -21,7 +21,7 @@ export function getTokenStatus(token) {
 }
 
 export function truncateKey(key, width) {
-	if (!key || key.length <= width) { return key }
+	if (!key || key.length <= width) { return key.padEnd(width) }
 
 	const parts = key.split('.')
 	let result = ''
@@ -37,13 +37,13 @@ export function truncateKey(key, width) {
 	}
 
 	// If still too long, truncate from the end
-	return result || key.slice(-width)
+	return (result || key.slice(-width)).padEnd(width)
 }
 
 export function truncateTag(tag, width) {
 	if (!tag || tag === '') { return '-'.padEnd(width) }
 	if (tag.length <= width) { return tag.padEnd(width) }
-	return tag.slice(0, width - 1) + '…'
+	return (tag.slice(0, width - 1) + '…').padEnd(width)
 }
 
 export function formatExpiration(expiration, width = 12) {
@@ -71,7 +71,7 @@ export function formatCreatedAt(createdAt, width = 10) {
 
 export function previewToken(token, width = 20) {
 	if (!token || token.length <= 12) {
-		return token.padEnd(width)
+		return (token || '').padEnd(width)
 	}
 
 	const preview = token.slice(0, 8) + '…' + token.slice(-4)

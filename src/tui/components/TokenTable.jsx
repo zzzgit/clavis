@@ -72,7 +72,7 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
           color={status.color}
           backgroundColor={isSelected ? 'blue' : undefined}
         >
-          {` ${status.char} `}
+          {` ${status.char} `.padEnd(statusWidth)}
         </Text>
         
         <Text

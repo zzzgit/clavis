@@ -62,7 +62,7 @@ describe('Format Utilities', () => {
       const key = 'api.github.com'
       const result = truncateKey(key, 20)
 
-      expect(result).toBe('api.github.com')
+      expect(result).toBe('api.github.com'.padEnd(20))
     })
 
     test('should truncate long key from end', () => {
@@ -75,15 +75,15 @@ describe('Format Utilities', () => {
 
     test('should handle empty key', () => {
       const result = truncateKey('', 10)
-      expect(result).toBe('')
+      expect(result).toBe(''.padEnd(10))
     })
 
     test('should keep as much of the end as possible', () => {
       const key = 'a.b.c.d.e.f.g.h.i.j'
       const result = truncateKey(key, 15)
 
-      expect(result).toMatch(/^…[a-z.]+$/)
-      expect(result.length).toBeLessThanOrEqual(15)
+      expect(result).toMatch(/^…[a-z.]+\s*$/)
+      expect(result.length).toBe(15)
     })
   })
 
