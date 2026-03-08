@@ -12,7 +12,7 @@
     "dev:tui": "tsx src/tui/index.js",
     "build": "tsup",
     "build:watch": "tsup --watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "lint": "eslint src/**/*.js",
     "lint:fix": "eslint src/**/*.js --fix"
   },
