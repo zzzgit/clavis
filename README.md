@@ -93,12 +93,34 @@ Each token record contains:
 
 Tokens are stored in `data/tokens.json` in the project directory. The file is automatically created and managed by the application.
 
+## TUI Interface
+
+Clavis includes a Terminal User Interface (TUI) for interactive token management:
+
+```bash
+npm run dev:tui
+```
+
+### TUI Components
+The TUI uses React components with the Ink library. See [COMPONENTS.md](COMPONENTS.md) for detailed documentation on:
+- **ConfirmDialog**: Interactive confirmation dialogs for dangerous operations
+- **Warning**: Notification components for feedback and error messages
+- Other TUI components and their usage
+
 ## Development
 
 ### Project Structure
 ```
 src/
 ├── index.js          # CLI entry point
+├── tui/              # Terminal User Interface
+│   ├── index.js      # TUI entry point
+│   ├── components/   # React components
+│   │   ├── App.jsx
+│   │   ├── ConfirmDialog.jsx
+│   │   ├── Warning.jsx
+│   │   └── ...
+│   └── utils/        # TUI utilities
 ├── models/
 │   └── Token.js      # Token data model
 ├── services/

@@ -7,6 +7,7 @@ import HelpPanel from './HelpPanel.jsx';
 import Header from './Header.jsx';
 import Footer from './Footer.jsx';
 import ConfirmDialog from './ConfirmDialog.jsx';
+import Warning from './Warning.jsx';
 import SearchInput from './SearchInput.jsx';
 import { simpleFuzzySearch } from '../utils/fuzzySearch.js';
 import { getTokenStatus } from '../utils/format.js';
@@ -21,6 +22,7 @@ function App({ tokens: initialTokens, storage }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
+  const [warning, setWarning] = useState(null)
   
   const filteredTokens = simpleFuzzySearch(tokens, filter, ['key', 'tag', 'comment']);
   
@@ -82,9 +84,9 @@ function App({ tokens: initialTokens, storage }) {
       const updatedTokens = storage.getAll();
       setTokens(updatedTokens);
       setIsEditing(false);
+      showWarning('Token updated successfully', 'success', 'Success');
     } catch (error) {
-      // TODO: Show error message
-      console.error('Error saving token:', error.message);
+      showWarning(`Error saving token: ${error.message}`, 'error', 'Error');
     }
   };
   
@@ -105,14 +107,28 @@ function App({ tokens: initialTokens, storage }) {
       setTokens(updatedTokens);
       setSelectedIndex(prev => Math.min(prev, updatedTokens.length - 1));
       setShowDeleteConfirm(false);
+      showWarning('Token deleted successfully', 'success', 'Success');
     } catch (error) {
-      console.error('Error deleting token:', error.message);
+      showWarning(`Error deleting token: ${error.message}`, 'error', 'Error');
       setShowDeleteConfirm(false);
     }
   };
 
   const handleCancelDelete = () => {
     setShowDeleteConfirm(false);
+  };
+
+  const showWarning = (message, type = 'warning', title = 'Warning', autoClose = true) => {
+    setWarning({
+      message,
+      type,
+      title,
+      autoClose
+    });
+  };
+
+  const hideWarning = () => {
+    setWarning(null);
   };
 
   const handleSearch = (searchValue) => {
@@ -129,8 +145,9 @@ function App({ tokens: initialTokens, storage }) {
       const updatedTokens = storage.getAll();
       setTokens(updatedTokens);
       setIsCreating(false);
+      showWarning('Token created successfully', 'success', 'Success');
     } catch (error) {
-      console.error('Error creating token:', error.message);
+      showWarning(`Error creating token: ${error.message}`, 'error', 'Error');
     }
   };
   
@@ -143,6 +160,17 @@ function App({ tokens: initialTokens, storage }) {
         filter={filter} 
       />
       <Box flexGrow={1} flexDirection="column">
+        {warning && (
+          <Box marginBottom={1}>
+            <Warning
+              message={warning.message}
+              title={warning.title}
+              type={warning.type}
+              autoClose={warning.autoClose}
+              onClose={hideWarning}
+            />
+          </Box>
+        )}
         {showDeleteConfirm ? (
           <ConfirmDialog
             message={`Delete token "${selectedToken?.key}"? This action cannot be undone.`}

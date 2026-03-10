@@ -1,12 +1,47 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 
-function ConfirmDialog({ message, onConfirm, onCancel }) {
+function ConfirmDialog({ 
+  message, 
+  title = 'Confirm Action',
+  confirmText = 'Yes', 
+  cancelText = 'No',
+  onConfirm, 
+  onCancel,
+  type = 'warning'
+}) {
   const [selectedOption, setSelectedOption] = useState(0);
   const options = [
-    { label: 'Yes', value: true },
-    { label: 'No', value: false }
+    { label: confirmText, value: true },
+    { label: cancelText, value: false }
   ];
+
+  const getBorderColor = () => {
+    switch (type) {
+      case 'danger': return 'red'
+      case 'warning': return 'yellow'
+      case 'info': return 'blue'
+      default: return 'yellow'
+    }
+  }
+
+  const getTitleColor = () => {
+    switch (type) {
+      case 'danger': return 'red'
+      case 'warning': return 'yellow'
+      case 'info': return 'blue'
+      default: return 'yellow'
+    }
+  }
+
+  const getIcon = () => {
+    switch (type) {
+      case 'danger': return '❌'
+      case 'warning': return '⚠️'
+      case 'info': return 'ℹ️'
+      default: return '⚠️'
+    }
+  }
 
   const handleConfirm = useCallback(() => {
     onConfirm();
@@ -37,23 +72,19 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <Box
       borderStyle="round"
-      borderColor="red"
+      borderColor={getBorderColor()}
       padding={2}
       flexDirection="column"
       flexGrow={1}
     >
       <Box marginBottom={2}>
-        <Text bold color="red">
-          ⚠️  Confirm Action
+        <Text bold color={getTitleColor()}>
+          {getIcon()}  {title}
         </Text>
       </Box>
       
       <Box marginBottom={2}>
         <Text>{message}</Text>
-      </Box>
-      
-      <Box marginBottom={2}>
-        <Text bold>Are you sure?</Text>
       </Box>
       
       <Box flexDirection="row" justifyContent="center" gap={4}>
