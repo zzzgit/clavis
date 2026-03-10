@@ -8,6 +8,7 @@ import Header from './Header.jsx';
 import Footer from './Footer.jsx';
 import ConfirmDialog from './ConfirmDialog.jsx';
 import SearchInput from './SearchInput.jsx';
+import { simpleFuzzySearch } from '../utils/fuzzySearch.js';
 
 function App({ tokens: initialTokens, storage }) {
   const { exit } = useApp()
@@ -20,13 +21,7 @@ function App({ tokens: initialTokens, storage }) {
   const [showSearch, setShowSearch] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   
-  const filteredTokens = filter
-    ? tokens.filter(token => 
-        token.key.toLowerCase().includes(filter.toLowerCase()) ||
-        token.tag?.toLowerCase().includes(filter.toLowerCase()) ||
-        token.comment?.toLowerCase().includes(filter.toLowerCase())
-      )
-    : tokens;
+  const filteredTokens = simpleFuzzySearch(tokens, filter, ['key', 'tag', 'comment']);
   
   const selectedToken = filteredTokens[selectedIndex];
   
@@ -58,7 +53,7 @@ function App({ tokens: initialTokens, storage }) {
       return;
     }
     
-    if (input === 'f') {
+    if (input === 'f' || input === '/') {
       setShowSearch(true);
       return;
     }

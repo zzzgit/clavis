@@ -81,6 +81,12 @@ function SearchInput({ initialValue = '', onSearch, onCancel }) {
         </Text>
       </Box>
       
+      <Box marginBottom={2}>
+        <Text dimColor>
+          Supports fuzzy search: "gh" matches "github", "db" matches "database"
+        </Text>
+      </Box>
+      
       <Box marginTop={2} borderStyle="single" borderColor="gray" padding={1}>
         <Text dimColor>
           Press [Enter] to search, [Ctrl+U] to clear, [Esc] to cancel
