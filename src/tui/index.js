@@ -31,7 +31,6 @@ async function main() {
 	}
 
 	// Setup cleanup handlers
-	process.on('SIGINT', () => cleanupAndExit(0))
 	process.on('SIGTERM', () => cleanupAndExit(0))
 	process.on('uncaughtException', (error) => {
 		console.error('Uncaught exception:', error.message)

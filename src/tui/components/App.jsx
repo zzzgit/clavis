@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, useInput } from 'ink';
+import { Box, useInput, useApp } from 'ink';
 import TokenTable from './TokenTable.jsx';
 import EditForm from './EditForm.jsx';
 import HelpPanel from './HelpPanel.jsx';
@@ -9,13 +9,14 @@ import ConfirmDialog from './ConfirmDialog.jsx';
 import SearchInput from './SearchInput.jsx';
 
 function App({ tokens: initialTokens, storage }) {
-  const [tokens, setTokens] = useState(initialTokens);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
-  const [filter, setFilter] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const { exit } = useApp()
+  const [tokens, setTokens] = useState(initialTokens)
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [isEditing, setIsEditing] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
+  const [filter, setFilter] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
   
   const filteredTokens = filter
     ? tokens.filter(token => 
@@ -28,15 +29,16 @@ function App({ tokens: initialTokens, storage }) {
   const selectedToken = filteredTokens[selectedIndex];
   
   useInput((input, key) => {
-    if (isEditing) return;
+    if (isEditing) return
     
     if (input === 'q' || (key.ctrl && input === 'c')) {
-      process.exit(0);
+      exit()
+      return
     }
     
     if (input === '?') {
-      setShowHelp(!showHelp);
-      return;
+      setShowHelp(!showHelp)
+      return
     }
     
     if (input === 'e' && selectedToken) {
