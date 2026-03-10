@@ -9,6 +9,7 @@ import Footer from './Footer.jsx';
 import ConfirmDialog from './ConfirmDialog.jsx';
 import SearchInput from './SearchInput.jsx';
 import { simpleFuzzySearch } from '../utils/fuzzySearch.js';
+import { getTokenStatus } from '../utils/format.js';
 
 function App({ tokens: initialTokens, storage }) {
   const { exit } = useApp()
@@ -24,6 +25,16 @@ function App({ tokens: initialTokens, storage }) {
   const filteredTokens = simpleFuzzySearch(tokens, filter, ['key', 'tag', 'comment']);
   
   const selectedToken = filteredTokens[selectedIndex];
+  
+  const expiredTokenCount = tokens.filter(token => {
+    const status = getTokenStatus(token);
+    return status.label === 'Expired';
+  }).length;
+  
+  const warningTokenCount = tokens.filter(token => {
+    const status = getTokenStatus(token);
+    return status.label.startsWith('Expires in');
+  }).length;
   
   useInput((input, key) => {
     if (isEditing) return
@@ -125,7 +136,12 @@ function App({ tokens: initialTokens, storage }) {
   
   return (
     <Box flexDirection="column" height="100%">
-      <Header tokenCount={tokens.length} filter={filter} />
+      <Header 
+        tokenCount={tokens.length} 
+        expiredCount={expiredTokenCount}
+        warningCount={warningTokenCount}
+        filter={filter} 
+      />
       <Box flexGrow={1} flexDirection="column">
         {showDeleteConfirm ? (
           <ConfirmDialog
