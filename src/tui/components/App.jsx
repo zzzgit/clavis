@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, useInput, useApp } from 'ink';
 import TokenTable from './TokenTable.jsx';
 import EditForm from './EditForm.jsx';
+import CreateForm from './CreateForm.jsx';
 import HelpPanel from './HelpPanel.jsx';
 import Header from './Header.jsx';
 import Footer from './Footer.jsx';
@@ -17,6 +18,7 @@ function App({ tokens: initialTokens, storage }) {
   const [filter, setFilter] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
   
   const filteredTokens = filter
     ? tokens.filter(token => 
@@ -51,6 +53,11 @@ function App({ tokens: initialTokens, storage }) {
       return;
     }
     
+    if (input === 'c') {
+      setIsCreating(true);
+      return;
+    }
+    
     if (input === 'f') {
       setShowSearch(true);
       return;
@@ -77,6 +84,10 @@ function App({ tokens: initialTokens, storage }) {
   
   const handleCancelEdit = () => {
     setIsEditing(false);
+  };
+  
+  const handleCancelCreate = () => {
+    setIsCreating(false);
   };
   
   const handleDeleteToken = async () => {
@@ -106,6 +117,17 @@ function App({ tokens: initialTokens, storage }) {
     setShowSearch(false);
   };
   
+  const handleCreateToken = async (newTokenData) => {
+    try {
+      await storage.create(newTokenData);
+      const updatedTokens = storage.getAll();
+      setTokens(updatedTokens);
+      setIsCreating(false);
+    } catch (error) {
+      console.error('Error creating token:', error.message);
+    }
+  };
+  
   return (
     <Box flexDirection="column" height="100%">
       <Header tokenCount={tokens.length} filter={filter} />
@@ -121,6 +143,11 @@ function App({ tokens: initialTokens, storage }) {
             initialValue={filter}
             onSearch={handleSearch}
             onCancel={handleCancelSearch}
+          />
+        ) : isCreating ? (
+          <CreateForm
+            onSave={handleCreateToken}
+            onCancel={handleCancelCreate}
           />
         ) : isEditing ? (
           <EditForm
@@ -141,6 +168,7 @@ function App({ tokens: initialTokens, storage }) {
       <Footer
         selectedToken={selectedToken}
         isEditing={isEditing}
+        isCreating={isCreating}
         showHelp={showHelp}
       />
     </Box>

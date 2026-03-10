@@ -5,9 +5,10 @@ function HelpPanel({ onClose }) {
   const keyBindings = [
     { key: '↑ / k', description: 'Move selection up' },
     { key: '↓ / j', description: 'Move selection down' },
-    { key: 'Enter / e', description: 'Edit selected token' },
+    { key: 'c', description: 'Create new token' },
+    { key: 'e', description: 'Edit selected token' },
     { key: 'd', description: 'Delete selected token' },
-    { key: 'f', description: 'Filter tokens (coming soon)' },
+    { key: 'f', description: 'Filter tokens' },
     { key: '?', description: 'Show/hide this help' },
     { key: 'q / Ctrl+C', description: 'Quit application' }
   ];
@@ -17,6 +18,13 @@ function HelpPanel({ onClose }) {
     { key: 'Shift+Tab', description: 'Previous field' },
     { key: 'Enter', description: 'Save changes' },
     { key: 'Esc', description: 'Cancel edit' }
+  ];
+  
+  const createModeBindings = [
+    { key: 'Tab', description: 'Next field' },
+    { key: 'Shift+Tab', description: 'Previous field' },
+    { key: 'Enter', description: 'Create token' },
+    { key: 'Esc', description: 'Cancel create' }
   ];
   
   const statusIndicators = [
@@ -55,11 +63,23 @@ function HelpPanel({ onClose }) {
         ))}
       </Box>
       
-      <Box marginBottom={2} flexDirection="column">
+       <Box marginBottom={2} flexDirection="column">
         <Text bold underline>Edit Mode</Text>
         {editModeBindings.map((binding, index) => (
           <Box key={index} marginLeft={2}>
             <Text width={20} bold color="green">
+              {binding.key}
+            </Text>
+            <Text> {binding.description}</Text>
+          </Box>
+        ))}
+      </Box>
+      
+      <Box marginBottom={2} flexDirection="column">
+        <Text bold underline>Create Mode</Text>
+        {createModeBindings.map((binding, index) => (
+          <Box key={index} marginLeft={2}>
+            <Text width={20} bold color="blue">
               {binding.key}
             </Text>
             <Text> {binding.description}</Text>

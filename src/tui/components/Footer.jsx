@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 
-function Footer({ selectedToken, isEditing, showHelp }) {
+function Footer({ selectedToken, isEditing, isCreating, showHelp }) {
   // Keyboard handling is now done in App component using useInput hook
   
   if (showHelp) {
@@ -14,6 +14,21 @@ function Footer({ selectedToken, isEditing, showHelp }) {
         justifyContent="center"
       >
         <Text color="cyan">Press any key to close help</Text>
+      </Box>
+    );
+  }
+  
+  if (isCreating) {
+    return (
+      <Box
+        borderStyle="round"
+        borderColor="blue"
+        paddingX={1}
+        paddingY={0}
+        justifyContent="space-between"
+      >
+        <Text color="blue">Creating New Token</Text>
+        <Text dimColor>[Tab] Next [Shift+Tab] Prev [Enter] Save [Esc] Cancel</Text>
       </Box>
     );
   }
@@ -56,7 +71,7 @@ function Footer({ selectedToken, isEditing, showHelp }) {
       
       <Box>
         <Text dimColor>
-          [↑↓/jk] Navigate • [e] Edit • [d] Delete • [f] Search • [?] Help • [q] Quit
+          [↑↓/jk] Navigate • [c] Create • [e] Edit • [d] Delete • [f] Search • [?] Help • [q] Quit
         </Text>
       </Box>
     </Box>

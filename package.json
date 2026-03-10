@@ -27,6 +27,11 @@
   "license": "ISC",
   "type": "module",
   "jsx": "react-jsx",
+  "imports": {
+    "#jsx": {
+      "react-jsx": "./src/tui/utils/jsx.js"
+    }
+  },
   "dependencies": {
     "commander": "^11.1.0",
     "date-fns": "^4.1.0",
