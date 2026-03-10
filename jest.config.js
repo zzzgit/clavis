@@ -16,5 +16,9 @@ export default {
   coverageReporters: ['text', 'lcov', 'html'],
   transformIgnorePatterns: [
     'node_modules/(?!(date-fns)/)'
-  ]
+  ],
+  moduleFileExtensions: ['js', 'jsx', 'json'],
+  setupFilesAfterEnv: [],
+  testPathIgnorePatterns: ['/node_modules/'],
+  verbose: true
 }

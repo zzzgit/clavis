@@ -185,7 +185,16 @@ describe('Format Utilities', () => {
     })
 
     test('should use minimum widths for medium terminal', () => {
-      const totalMinWidth = 4 + 20 + 15 + 12 + 10 + 20 + 7
+      const minWidths = {
+        status: 4,
+        key: 20,
+        tag: 15,
+        expires: 12,
+        created: 10,
+        token: 20
+      }
+      const columnSpacing = 5
+      const totalMinWidth = Object.values(minWidths).reduce((a, b) => a + b, 0) + columnSpacing + 7
       const widths = calculateColumnWidths(totalMinWidth)
 
       expect(widths.status).toBe(4)

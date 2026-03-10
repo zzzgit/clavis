@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { program } from 'commander'
-import { createInterface, emitKeypressEvents } from 'readline'
+import { createInterface } from 'readline'
 import TokenStorage from './services/TokenStorage.js'
 
 const storage = new TokenStorage()
