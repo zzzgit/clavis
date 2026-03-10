@@ -48,13 +48,18 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
     
     return (
       <Box>
-        <Text bold>
-          <Text color="cyan" width={status}>Stat</Text>
-          <Text color="cyan" width={key}>Key</Text>
-          <Text color="cyan" width={tag}>Tag</Text>
-          <Text color="cyan" width={expires}>Expires</Text>
-          <Text color="cyan" width={created}>Created</Text>
-          <Text color="cyan" width={token}>Token Preview</Text>
+        <Text bold color="cyan">
+          <Text width={status}>Stat</Text>
+          <Text> </Text>
+          <Text width={key}>Key</Text>
+          <Text> </Text>
+          <Text width={tag}>Tag</Text>
+          <Text> </Text>
+          <Text width={expires}>Expires</Text>
+          <Text> </Text>
+          <Text width={created}>Created</Text>
+          <Text> </Text>
+          <Text width={token}>Token Preview</Text>
         </Text>
       </Box>
     );
@@ -66,51 +71,50 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
     const { status: statusWidth, key, tag, expires, created, token: tokenWidth } = columnWidths;
     
     const rowContent = (
-      <Box>
+      <Box backgroundColor={isSelected ? 'blue' : undefined}>
         <Text
           width={statusWidth}
-          color={status.color}
-          backgroundColor={isSelected ? 'blue' : undefined}
+          color={isSelected ? 'white' : status.color}
         >
           {` ${status.char} `.padEnd(statusWidth)}
         </Text>
+        <Text color={isSelected ? 'white' : undefined}> </Text>
         
         <Text
           width={key}
           color={isSelected ? 'white' : 'white'}
-          backgroundColor={isSelected ? 'blue' : undefined}
         >
           {truncateKey(token.key, key)}
         </Text>
+        <Text color={isSelected ? 'white' : undefined}> </Text>
         
         <Text
           width={tag}
           color={isSelected ? 'white' : 'cyan'}
-          backgroundColor={isSelected ? 'blue' : undefined}
         >
           {truncateTag(token.tag, tag)}
         </Text>
+        <Text color={isSelected ? 'white' : undefined}> </Text>
         
         <Text
           width={expires}
           color={isSelected ? 'white' : status.color}
-          backgroundColor={isSelected ? 'blue' : undefined}
         >
           {formatExpiration(token.expiration, expires)}
         </Text>
+        <Text color={isSelected ? 'white' : undefined}> </Text>
         
         <Text
           width={created}
           color={isSelected ? 'white' : 'gray'}
-          backgroundColor={isSelected ? 'blue' : undefined}
         >
           {formatCreatedAt(token.createdAt, created)}
         </Text>
+        <Text color={isSelected ? 'white' : undefined}> </Text>
         
         <Text
           width={tokenWidth}
           color={isSelected ? 'white' : 'gray'}
-          backgroundColor={isSelected ? 'blue' : undefined}
         >
           {previewToken(token.token, tokenWidth)}
         </Text>
