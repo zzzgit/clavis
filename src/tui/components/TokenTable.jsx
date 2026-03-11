@@ -80,17 +80,17 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
     return (
       <Box>
         <Text bold color="cyan">
-          <Text width={status}>Stat</Text>
+          <Text width={status}>{'Stat'.padEnd(status)}</Text>
           <Text> </Text>
-          <Text width={key}>Key</Text>
+          <Text width={key}>{'Key'.padEnd(key)}</Text>
           <Text> </Text>
-          <Text width={tag}>Tag</Text>
+          <Text width={tag}>{'Tag'.padEnd(tag)}</Text>
           <Text> </Text>
-          <Text width={expires}>Expires</Text>
+          <Text width={expires}>{'Expires'.padEnd(expires)}</Text>
           <Text> </Text>
-          <Text width={created}>Created</Text>
+          <Text width={created}>{'Created'.padEnd(created)}</Text>
           <Text> </Text>
-          <Text width={token}>Token Preview</Text>
+          <Text width={token}>{'Token Preview'.padEnd(token)}</Text>
         </Text>
       </Box>
     );
