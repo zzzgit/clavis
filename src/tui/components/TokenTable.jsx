@@ -79,16 +79,44 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
     
     return (
       <Box>
-        <Text bold color="cyan">
-          <Text width={key}>{'Key'.padEnd(key)}</Text>
-          <Text> </Text>
-          <Text width={tag}>{'Tag'.padEnd(tag)}</Text>
-          <Text> </Text>
-          <Text width={expires}>{'Expires'.padEnd(expires)}</Text>
-          <Text> </Text>
-          <Text width={created}>{'Created'.padEnd(created)}</Text>
-          <Text> </Text>
-          <Text width={token}>{'Token Preview'.padEnd(token)}</Text>
+        <Text
+          width={key}
+          bold
+          color="cyan"
+        >
+          {'Key'.padEnd(key)}
+        </Text>
+        <Text> </Text>
+        <Text
+          width={tag}
+          bold
+          color="cyan"
+        >
+          {'Tag'.padEnd(tag)}
+        </Text>
+        <Text> </Text>
+        <Text
+          width={expires}
+          bold
+          color="cyan"
+        >
+          {'Expires'.padEnd(expires)}
+        </Text>
+        <Text> </Text>
+        <Text
+          width={created}
+          bold
+          color="cyan"
+        >
+          {'Created'.padEnd(created)}
+        </Text>
+        <Text> </Text>
+        <Text
+          width={token}
+          bold
+          color="cyan"
+        >
+          {'Token Preview'.padEnd(token)}
         </Text>
       </Box>
     );
@@ -99,7 +127,7 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
     const status = getTokenStatus(token);
     const { key, tag, expires, created, token: tokenWidth } = columnWidths;
     
-    const rowContent = (
+    return (
       <Box backgroundColor={isSelected ? 'blue' : undefined}>
         <Text
           width={key}
@@ -107,7 +135,7 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
         >
           {truncateKey(token.key, key)}
         </Text>
-        <Text color={isSelected ? 'white' : undefined}> </Text>
+        <Text> </Text>
         
         <Text
           width={tag}
@@ -115,7 +143,7 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
         >
           {truncateTag(token.tag, tag)}
         </Text>
-        <Text color={isSelected ? 'white' : undefined}> </Text>
+        <Text> </Text>
         
         <Text
           width={expires}
@@ -123,7 +151,7 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
         >
           {formatExpiration(token.expiration, expires)}
         </Text>
-        <Text color={isSelected ? 'white' : undefined}> </Text>
+        <Text> </Text>
         
         <Text
           width={created}
@@ -131,7 +159,7 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
         >
           {formatCreatedAt(token.createdAt, created)}
         </Text>
-        <Text color={isSelected ? 'white' : undefined}> </Text>
+        <Text> </Text>
         
         <Text
           width={tokenWidth}
@@ -141,21 +169,13 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
         </Text>
       </Box>
     );
-    
-    return rowContent;
   };
   
   const visibleTokens = tokens.slice(startIndex, endIndex)
   
   return (
     <Box flexDirection="column" height={availableHeight}>
-      <Box
-        borderStyle="round"
-        borderColor="gray"
-        paddingX={1}
-        paddingY={0}
-        marginBottom={1}
-      >
+      <Box marginBottom={1}>
         {renderHeader()}
       </Box>
       
