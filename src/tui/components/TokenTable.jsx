@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Text } from 'ink';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Box, Text, useStdout } from 'ink';
 import {
   getTokenStatus,
   truncateKey,
@@ -11,22 +11,53 @@ import {
 } from '../utils/format.js';
 
 function TokenTable({ tokens, selectedIndex, onSelect }) {
+  const { stdout } = useStdout()
   const [columnWidths, setColumnWidths] = useState(() => {
-    const terminalWidth = process.stdout.columns || 80;
+    const terminalWidth = stdout.columns || 80;
     return calculateColumnWidths(terminalWidth);
   });
   
+  // 計算可用高度：使用父容器的高度
+  const terminalHeight = stdout.rows || 24
+  const availableHeight = Math.max(terminalHeight - 6, 10) // 總高度減去Header、Footer和邊框
+  
+  // 計算顯示的數據範圍
+  const { startIndex, endIndex } = useMemo(() => {
+    if (tokens.length === 0) {
+      return { startIndex: 0, endIndex: 0 }
+    }
+    
+    // Table顯示區域高度（減去表頭和滾動指示器）
+    const tableHeight = Math.max(availableHeight - 4, 5)
+    
+    // 確保selectedIndex在視圖中
+    let startIndex = 0
+    if (selectedIndex >= startIndex + tableHeight) {
+      startIndex = selectedIndex - tableHeight + 1
+    } else if (selectedIndex < startIndex) {
+      startIndex = selectedIndex
+    }
+    
+    // 確保startIndex不為負數
+    startIndex = Math.max(0, startIndex)
+    
+    // 計算endIndex
+    const endIndex = Math.min(startIndex + tableHeight, tokens.length)
+    
+    return { startIndex, endIndex }
+  }, [tokens.length, selectedIndex, availableHeight])
+  
   useEffect(() => {
     const handleResize = () => {
-      const terminalWidth = process.stdout.columns || 80;
+      const terminalWidth = stdout.columns || 80;
       setColumnWidths(calculateColumnWidths(terminalWidth));
     };
     
-    process.stdout.on('resize', handleResize);
+    stdout.on('resize', handleResize);
     return () => {
-      process.stdout.off('resize', handleResize);
+      stdout.off('resize', handleResize);
     };
-  }, []);
+  }, [stdout]);
   
   if (tokens.length === 0) {
     return (
@@ -124,8 +155,10 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
     return rowContent;
   };
   
+  const visibleTokens = tokens.slice(startIndex, endIndex)
+  
   return (
-    <Box flexDirection="column" flexGrow={1}>
+    <Box flexDirection="column" height={availableHeight}>
       <Box
         borderStyle="round"
         borderColor="gray"
@@ -137,11 +170,29 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
       </Box>
       
       <Box flexDirection="column" flexGrow={1} overflow="hidden">
-        {tokens.map((token, index) => (
-          <Box key={token.key} marginBottom={0}>
-            {renderRow(token, index)}
+        {visibleTokens.map((token, index) => {
+          const actualIndex = startIndex + index
+          return (
+            <Box key={token.key} marginBottom={0}>
+              {renderRow(token, actualIndex)}
+            </Box>
+          )
+        })}
+        
+        {/* 顯示滾動指示器 */}
+        {tokens.length > 0 && (
+          <Box marginTop={0} justifyContent="space-between">
+            <Text dimColor>
+              {startIndex > 0 ? '↑ More above' : ''}
+            </Text>
+            <Text dimColor>
+              Showing {startIndex + 1}-{endIndex} of {tokens.length}
+            </Text>
+            <Text dimColor>
+              {endIndex < tokens.length ? '↓ More below' : ''}
+            </Text>
           </Box>
-        ))}
+        )}
       </Box>
     </Box>
   );

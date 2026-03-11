@@ -153,24 +153,31 @@ function App({ tokens: initialTokens, storage }) {
   
   return (
     <Box flexDirection="column" height="100%">
-      <Header 
-        tokenCount={tokens.length} 
-        expiredCount={expiredTokenCount}
-        warningCount={warningTokenCount}
-        filter={filter} 
-      />
-      <Box flexGrow={1} flexDirection="column">
-        {warning && (
-          <Box marginBottom={1}>
-            <Warning
-              message={warning.message}
-              title={warning.title}
-              type={warning.type}
-              autoClose={warning.autoClose}
-              onClose={hideWarning}
-            />
-          </Box>
-        )}
+      {/* Header - 固定高度 */}
+      <Box height={3}>
+        <Header 
+          tokenCount={tokens.length} 
+          expiredCount={expiredTokenCount}
+          warningCount={warningTokenCount}
+          filter={filter} 
+        />
+      </Box>
+      
+      {/* 警告消息 - 動態高度 */}
+      {warning && (
+        <Box marginBottom={1}>
+          <Warning
+            message={warning.message}
+            title={warning.title}
+            type={warning.type}
+            autoClose={warning.autoClose}
+            onClose={hideWarning}
+          />
+        </Box>
+      )}
+      
+      {/* 主內容區域 - 固定高度 */}
+      <Box flexGrow={1} flexDirection="column" overflow="hidden">
         {showDeleteConfirm ? (
           <ConfirmDialog
             message={`Delete token "${selectedToken?.key}"? This action cannot be undone.`}
@@ -204,12 +211,16 @@ function App({ tokens: initialTokens, storage }) {
           />
         )}
       </Box>
-      <Footer
-        selectedToken={selectedToken}
-        isEditing={isEditing}
-        isCreating={isCreating}
-        showHelp={showHelp}
-      />
+      
+      {/* Footer - 固定高度 */}
+      <Box height={2}>
+        <Footer
+          selectedToken={selectedToken}
+          isEditing={isEditing}
+          isCreating={isCreating}
+          showHelp={showHelp}
+        />
+      </Box>
     </Box>
   );
 }
