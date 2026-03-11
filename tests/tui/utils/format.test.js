@@ -176,7 +176,6 @@ describe('Format Utilities', () => {
     test('should use minimum widths for narrow terminal', () => {
       const widths = calculateColumnWidths(80)
 
-      expect(widths.status).toBeGreaterThanOrEqual(3)
       expect(widths.key).toBeGreaterThanOrEqual(10)
       expect(widths.tag).toBeGreaterThanOrEqual(8)
       expect(widths.expires).toBeGreaterThanOrEqual(8)
@@ -186,18 +185,16 @@ describe('Format Utilities', () => {
 
     test('should use minimum widths for medium terminal', () => {
       const minWidths = {
-        status: 4,
         key: 20,
         tag: 15,
         expires: 12,
         created: 10,
         token: 20
       }
-      const columnSpacing = 5
+      const columnSpacing = 4
       const totalMinWidth = Object.values(minWidths).reduce((a, b) => a + b, 0) + columnSpacing + 7
       const widths = calculateColumnWidths(totalMinWidth)
 
-      expect(widths.status).toBe(4)
       expect(widths.key).toBe(20)
       expect(widths.tag).toBe(15)
       expect(widths.expires).toBe(12)
@@ -206,7 +203,7 @@ describe('Format Utilities', () => {
     })
 
     test('should allocate extra space for wide terminal', () => {
-      const totalMinWidth = 4 + 20 + 15 + 12 + 10 + 20 + 7
+      const totalMinWidth = 20 + 15 + 12 + 10 + 20 + 7
       const extraWidth = 50
       const terminalWidth = totalMinWidth + extraWidth
       const widths = calculateColumnWidths(terminalWidth)
@@ -219,7 +216,7 @@ describe('Format Utilities', () => {
     test('should handle very narrow terminal', () => {
       const widths = calculateColumnWidths(50)
 
-      const totalWidth = widths.status + widths.key + widths.tag + widths.expires + widths.created + widths.token
+      const totalWidth = widths.key + widths.tag + widths.expires + widths.created + widths.token
       expect(totalWidth).toBeLessThanOrEqual(50)
     })
   })

@@ -75,13 +75,11 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
   }
   
   const renderHeader = () => {
-    const { status, key, tag, expires, created, token } = columnWidths;
+    const { key, tag, expires, created, token } = columnWidths;
     
     return (
       <Box>
         <Text bold color="cyan">
-          <Text width={status}>{'Stat'.padEnd(status)}</Text>
-          <Text> </Text>
           <Text width={key}>{'Key'.padEnd(key)}</Text>
           <Text> </Text>
           <Text width={tag}>{'Tag'.padEnd(tag)}</Text>
@@ -99,18 +97,10 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
   const renderRow = (token, index) => {
     const isSelected = index === selectedIndex;
     const status = getTokenStatus(token);
-    const { status: statusWidth, key, tag, expires, created, token: tokenWidth } = columnWidths;
+    const { key, tag, expires, created, token: tokenWidth } = columnWidths;
     
     const rowContent = (
       <Box backgroundColor={isSelected ? 'blue' : undefined}>
-        <Text
-          width={statusWidth}
-          color={isSelected ? 'white' : status.color}
-        >
-          {` ${status.char} `.padEnd(statusWidth)}
-        </Text>
-        <Text color={isSelected ? 'white' : undefined}> </Text>
-        
         <Text
           width={key}
           color={isSelected ? 'white' : 'white'}
