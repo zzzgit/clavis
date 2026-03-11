@@ -10,8 +10,9 @@ function Header({ tokenCount, expiredCount = 0, warningCount = 0, filter }) {
       paddingX={1}
       paddingY={0}
       flexDirection="column"
+      width="100%"
     >
-      <Box justifyContent="space-between">
+      <Box justifyContent="space-between" width="100%">
         <Text bold color="blue">
           Clavis Token Manager v1.0.0
         </Text>
