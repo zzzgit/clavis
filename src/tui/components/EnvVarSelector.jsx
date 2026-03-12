@@ -7,6 +7,8 @@ function EnvVarSelector({ onSelect, onCancel }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [vendors, setVendors] = useState(searchVendorEnvVars(''))
+  const [scrollOffset, setScrollOffset] = useState(0)
+  const visibleRows = 6
 
   const handleSearch = useCallback((term) => {
     setSearchTerm(term)
@@ -15,6 +17,7 @@ function EnvVarSelector({ onSelect, onCancel }) {
     if (selectedIndex >= filteredVendors.length) {
       setSelectedIndex(Math.max(0, filteredVendors.length - 1))
     }
+    setScrollOffset(0)
   }, [selectedIndex])
 
   const handleSelect = useCallback(() => {
@@ -57,9 +60,19 @@ function EnvVarSelector({ onSelect, onCancel }) {
       setSearchTerm('')
       setVendors(searchVendorEnvVars(''))
       setSelectedIndex(0)
+      setScrollOffset(0)
       return
     }
   })
+
+  useEffect(() => {
+    // Keep selected item visible
+    if (selectedIndex < scrollOffset) {
+      setScrollOffset(selectedIndex)
+    } else if (selectedIndex >= scrollOffset + visibleRows) {
+      setScrollOffset(selectedIndex - visibleRows + 1)
+    }
+  }, [selectedIndex, scrollOffset, visibleRows])
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -99,6 +112,10 @@ function EnvVarSelector({ onSelect, onCancel }) {
     )
   }
 
+  const visibleVendors = vendors.slice(scrollOffset, scrollOffset + visibleRows)
+  const hasMoreAbove = scrollOffset > 0
+  const hasMoreBelow = scrollOffset + visibleRows < vendors.length
+
   return (
     <Box
       borderStyle="round"
@@ -132,13 +149,27 @@ function EnvVarSelector({ onSelect, onCancel }) {
         </Box>
       </Box>
       
-      <Box marginBottom={2} flexDirection="column" maxHeight={12} overflow="hidden">
+      <Box marginBottom={2} flexDirection="column" maxHeight={visibleRows * 2 + 2} overflow="hidden">
         {vendors.length === 0 ? (
           <Box padding={1}>
             <Text color="gray">No vendors found matching "{searchTerm}"</Text>
           </Box>
         ) : (
-          vendors.map((vendor, index) => renderVendorItem(vendor, index))
+          <>
+            {hasMoreAbove && (
+              <Box paddingX={1} paddingY={0} marginBottom={1}>
+                <Text color="gray" dimColor>↑ More above</Text>
+              </Box>
+            )}
+            {visibleVendors.map((vendor, index) =>
+              renderVendorItem(vendor, scrollOffset + index)
+            )}
+            {hasMoreBelow && (
+              <Box paddingX={1} paddingY={0} marginTop={1}>
+                <Text color="gray" dimColor>↓ More below</Text>
+              </Box>
+            )}
+          </>
         )}
       </Box>
       
