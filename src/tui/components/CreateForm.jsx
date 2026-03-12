@@ -8,11 +8,12 @@ function CreateForm({ onSave, onCancel }) {
     token: '',
     expiration: '',
     tag: '',
-    comment: ''
+    comment: '',
+    env: ''
   });
   
   const [activeField, setActiveField] = useState(0);
-  const fields = ['key', 'token', 'expiration', 'tag', 'comment'];
+  const fields = ['key', 'token', 'expiration', 'tag', 'comment', 'env'];
   
   const handleSave = useCallback(() => {
     const newToken = {
@@ -20,7 +21,8 @@ function CreateForm({ onSave, onCancel }) {
       token: formData.token.trim(),
       expiration: formData.expiration.trim() || null,
       tag: formData.tag.trim() || '',
-      comment: formData.comment.trim() || ''
+      comment: formData.comment.trim() || '',
+      env: formData.env.trim() || ''
     };
     
     if (!newToken.key || !newToken.token) {
@@ -103,12 +105,13 @@ function CreateForm({ onSave, onCancel }) {
         </Text>
       </Box>
       
-      <Box flexDirection="column">
+       <Box flexDirection="column">
         {renderField('key', 'Key', 'Enter unique key', true)}
         {renderField('token', 'Token', 'Enter token value', true)}
         {renderField('expiration', 'Expiration', 'YYYY-MM-DD or empty')}
         {renderField('tag', 'Tag', 'Optional category tag')}
         {renderField('comment', 'Comment', 'Optional description')}
+        {renderField('env', 'Env Var', 'e.g., GITHUB_TOKEN, API_KEY')}
       </Box>
       
       <Box marginTop={2} borderStyle="single" borderColor="gray" padding={1}>

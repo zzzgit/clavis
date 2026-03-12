@@ -1,10 +1,11 @@
 class Token {
-	constructor({ key, token, expiration = null, tag = '', comment = '' }) {
+	constructor({ key, token, expiration = null, tag = '', comment = '', env = '' }) {
 		this.key = key
 		this.token = token
 		this.expiration = expiration
 		this.tag = tag
 		this.comment = comment
+		this.env = env
 		this.createdAt = new Date().toISOString()
 		this.updatedAt = this.createdAt
 	}
@@ -39,6 +40,7 @@ class Token {
 			expiration: this.expiration,
 			tag: this.tag,
 			comment: this.comment,
+			env: this.env,
 			createdAt: this.createdAt,
 			updatedAt: this.updatedAt
 		}

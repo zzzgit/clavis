@@ -3,7 +3,8 @@ import {
   validateToken,
   validateDate,
   validateTag,
-  validateComment
+  validateComment,
+  validateEnv
 } from '../../src/utils/validators.js'
 
 describe('Validators', () => {
@@ -188,6 +189,75 @@ describe('Validators', () => {
       const comment = 'a'.repeat(500)
       const result = validateComment(comment)
       expect(result.valid).toBe(true)
+    })
+  })
+
+  describe('validateEnv', () => {
+    test('should accept empty env', () => {
+      const result = validateEnv()
+      expect(result.valid).toBe(true)
+    })
+
+    test('should accept null env', () => {
+      const result = validateEnv(null)
+      expect(result.valid).toBe(true)
+    })
+
+    test('should accept valid env variable name', () => {
+      const result = validateEnv('GITHUB_TOKEN')
+      expect(result.valid).toBe(true)
+    })
+
+    test('should accept env variable with underscores', () => {
+      const result = validateEnv('API_KEY_SECRET')
+      expect(result.valid).toBe(true)
+    })
+
+    test('should accept env variable starting with underscore', () => {
+      const result = validateEnv('_PRIVATE_KEY')
+      expect(result.valid).toBe(true)
+    })
+
+    test('should accept env variable with numbers', () => {
+      const result = validateEnv('API_KEY_123')
+      expect(result.valid).toBe(true)
+    })
+
+    test('should reject non-string env', () => {
+      const result = validateEnv(123)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Env must be a string')
+    })
+
+    test('should reject env longer than 100 characters', () => {
+      const longEnv = 'A'.repeat(101)
+      const result = validateEnv(longEnv)
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Env cannot exceed 100 characters')
+    })
+
+    test('should accept env with exactly 100 characters', () => {
+      const env = 'A'.repeat(100)
+      const result = validateEnv(env)
+      expect(result.valid).toBe(true)
+    })
+
+    test('should reject env with lowercase letters', () => {
+      const result = validateEnv('github_token')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Env must contain only uppercase letters, numbers, and underscores, and start with a letter or underscore')
+    })
+
+    test('should reject env with special characters', () => {
+      const result = validateEnv('API-KEY')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Env must contain only uppercase letters, numbers, and underscores, and start with a letter or underscore')
+    })
+
+    test('should reject env starting with number', () => {
+      const result = validateEnv('1API_KEY')
+      expect(result.valid).toBe(false)
+      expect(result.error).toBe('Env must contain only uppercase letters, numbers, and underscores, and start with a letter or underscore')
     })
   })
 })

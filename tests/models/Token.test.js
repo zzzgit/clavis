@@ -25,7 +25,8 @@ describe('Token Model', () => {
         token: 'ghp_1234567890abcdef',
         expiration: '2025-12-31',
         tag: 'github',
-        comment: 'Personal access token'
+        comment: 'Personal access token',
+        env: 'GITHUB_TOKEN'
       }
 
       const token = new Token(tokenData)
@@ -35,6 +36,7 @@ describe('Token Model', () => {
       expect(token.expiration).toBe('2025-12-31')
       expect(token.tag).toBe('github')
       expect(token.comment).toBe('Personal access token')
+      expect(token.env).toBe('GITHUB_TOKEN')
     })
   })
 
@@ -111,7 +113,8 @@ describe('Token Model', () => {
         token: 'ghp_1234567890abcdef',
         expiration: '2025-12-31',
         tag: 'github',
-        comment: 'Personal access token'
+        comment: 'Personal access token',
+        env: 'GITHUB_TOKEN'
       })
 
       const json = token.toJSON()
@@ -122,6 +125,7 @@ describe('Token Model', () => {
         expiration: '2025-12-31',
         tag: 'github',
         comment: 'Personal access token',
+        env: 'GITHUB_TOKEN',
         createdAt: token.createdAt,
         updatedAt: token.updatedAt
       })
@@ -136,6 +140,7 @@ describe('Token Model', () => {
         expiration: '2025-12-31',
         tag: 'github',
         comment: 'Personal access token',
+        env: 'GITHUB_TOKEN',
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-02T00:00:00.000Z'
       }
@@ -147,6 +152,7 @@ describe('Token Model', () => {
       expect(token.expiration).toBe('2025-12-31')
       expect(token.tag).toBe('github')
       expect(token.comment).toBe('Personal access token')
+      expect(token.env).toBe('GITHUB_TOKEN')
       expect(token.createdAt).toBe('2024-01-01T00:00:00.000Z')
       expect(token.updatedAt).toBe('2024-01-02T00:00:00.000Z')
     })

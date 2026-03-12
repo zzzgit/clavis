@@ -92,10 +92,31 @@ function validateComment(comment) {
 	return { valid: true }
 }
 
+function validateEnv(env) {
+	if (!env) {
+		return { valid: true }
+	}
+
+	if (typeof env !== 'string') {
+		return { valid: false, error: 'Env must be a string' }
+	}
+
+	if (env.length > 100) {
+		return { valid: false, error: 'Env cannot exceed 100 characters' }
+	}
+
+	if (!/^[A-Z_][A-Z0-9_]*$/.test(env)) {
+		return { valid: false, error: 'Env must contain only uppercase letters, numbers, and underscores, and start with a letter or underscore' }
+	}
+
+	return { valid: true }
+}
+
 export {
 	validateKey,
 	validateToken,
 	validateDate,
 	validateTag,
-	validateComment
+	validateComment,
+	validateEnv
 }

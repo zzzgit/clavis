@@ -6,7 +6,8 @@ import {
 	validateToken,
 	validateDate,
 	validateTag,
-	validateComment
+	validateComment,
+	validateEnv
 } from '../utils/validators.js'
 
 class TokenStorage {
@@ -59,7 +60,8 @@ class TokenStorage {
 			validateToken(tokenData.token),
 			validateDate(tokenData.expiration),
 			validateTag(tokenData.tag),
-			validateComment(tokenData.comment)
+			validateComment(tokenData.comment),
+			validateEnv(tokenData.env)
 		]
 
 		const errors = validationResults
@@ -98,7 +100,8 @@ class TokenStorage {
 			updates.token !== undefined ? validateToken(updates.token) : { valid: true },
 			updates.expiration !== undefined ? validateDate(updates.expiration) : { valid: true },
 			updates.tag !== undefined ? validateTag(updates.tag) : { valid: true },
-			updates.comment !== undefined ? validateComment(updates.comment) : { valid: true }
+			updates.comment !== undefined ? validateComment(updates.comment) : { valid: true },
+			updates.env !== undefined ? validateEnv(updates.env) : { valid: true }
 		]
 
 		const errors = validationResults

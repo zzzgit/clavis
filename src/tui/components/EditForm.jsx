@@ -7,11 +7,12 @@ function EditForm({ token, onSave, onCancel }) {
     token: token.token,
     expiration: token.expiration || '',
     tag: token.tag || '',
-    comment: token.comment || ''
+    comment: token.comment || '',
+    env: token.env || ''
   });
   
   const [activeField, setActiveField] = useState(0);
-  const fields = ['token', 'expiration', 'tag', 'comment'];
+  const fields = ['token', 'expiration', 'tag', 'comment', 'env'];
   
   const handleSave = useCallback(() => {
     const updates = {};
@@ -30,6 +31,10 @@ function EditForm({ token, onSave, onCancel }) {
     
     if (formData.comment !== (token.comment || '')) {
       updates.comment = formData.comment || '';
+    }
+    
+    if (formData.env !== (token.env || '')) {
+      updates.env = formData.env || '';
     }
     
     if (Object.keys(updates).length > 0) {
@@ -114,11 +119,12 @@ function EditForm({ token, onSave, onCancel }) {
         <Text dimColor>Key cannot be changed (create new token instead)</Text>
       </Box>
       
-      <Box flexDirection="column">
+       <Box flexDirection="column">
         {renderField('token', 'Token', 'Enter new token value')}
         {renderField('expiration', 'Expiration', 'YYYY-MM-DD or empty')}
         {renderField('tag', 'Tag', 'Optional category tag')}
         {renderField('comment', 'Comment', 'Optional description')}
+        {renderField('env', 'Env Var', 'e.g., GITHUB_TOKEN, API_KEY')}
       </Box>
       
       <Box marginTop={2} borderStyle="single" borderColor="gray" padding={1}>
