@@ -1,6 +1,6 @@
-# AGENTS.md - Coding Guidelines for Clavis
+# CLAUDE.md - Coding Guidelines for Clavis
 
-This document provides coding guidelines and instructions for AI agents working on the Clavis project.
+This document provides coding guidelines and instructions for Claude Code working on the Clavis project.
 
 ## Project Overview
 Clavis is a token management system with a TUI interface. The codebase uses modern JavaScript (ES6+) with a focus on simplicity and maintainability.
@@ -75,7 +75,7 @@ clavis/
 │   └── services/       # Business logic and storage
 ├── tests/              # Test files
 ├── package.json        # Project dependencies
-└── AGENTS.md          # This file
+└── CLAUDE.md          # This file
 ```
 
 ## Common Patterns
@@ -124,7 +124,7 @@ try {
 }
 ```
 
-## Important Notes for AI Agents
+## Important Notes for Claude Code
 1. **Always check existing code patterns** before making changes
 2. **Follow the established style** even if it differs from your preferences
 3. **Test your changes** before considering work complete
