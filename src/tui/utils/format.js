@@ -79,41 +79,41 @@ export function previewToken(token, width = 20) {
 }
 
 export function calculateColumnWidths(terminalWidth) {
-  const minWidths = {
-    key: 20,
-    tag: 15,
-    expires: 12,
-    created: 10,
-    token: 20
-  }
+	const minWidths = {
+		key: 20,
+		tag: 15,
+		expires: 12,
+		created: 10,
+		token: 20
+	}
 
-  // 5列之间有4个空格间距
-  const columnSpacing = 4
-  const totalMinWidth = Object.values(minWidths).reduce((a, b) => a + b, 0) + columnSpacing + 7 // Borders + spacing
+	// 5列之间有4个空格间距
+	const columnSpacing = 4
+	const totalMinWidth = Object.values(minWidths).reduce((a, b) => a + b, 0) + columnSpacing + 7 // Borders + spacing
 
-  if (terminalWidth >= totalMinWidth + 20) {
-    // Wide terminal: give extra space to key column
-    const extraWidth = terminalWidth - totalMinWidth
-    return {
-      ...minWidths,
-      key: minWidths.key + Math.floor(extraWidth * 0.6),
-      tag: minWidths.tag + Math.floor(extraWidth * 0.2),
-      token: minWidths.token + Math.floor(extraWidth * 0.2)
-    }
-  }
+	if (terminalWidth >= totalMinWidth + 20) {
+		// Wide terminal: give extra space to key column
+		const extraWidth = terminalWidth - totalMinWidth
+		return {
+			...minWidths,
+			key: minWidths.key + Math.floor(extraWidth * 0.6),
+			tag: minWidths.tag + Math.floor(extraWidth * 0.2),
+			token: minWidths.token + Math.floor(extraWidth * 0.2)
+		}
+	}
 
-  if (terminalWidth >= totalMinWidth) {
-    // Medium terminal: use minimum widths
-    return minWidths
-  }
+	if (terminalWidth >= totalMinWidth) {
+		// Medium terminal: use minimum widths
+		return minWidths
+	}
 
-  // Narrow terminal: adjust proportions
-  const scale = (terminalWidth - columnSpacing) / (totalMinWidth - columnSpacing)
-  return {
-    key: Math.max(10, Math.floor(minWidths.key * scale)),
-    tag: Math.max(8, Math.floor(minWidths.tag * scale)),
-    expires: Math.max(8, Math.floor(minWidths.expires * scale)),
-    created: Math.max(8, Math.floor(minWidths.created * scale)),
-    token: Math.max(12, Math.floor(minWidths.token * scale))
-  }
+	// Narrow terminal: adjust proportions
+	const scale = (terminalWidth - columnSpacing) / (totalMinWidth - columnSpacing)
+	return {
+		key: Math.max(10, Math.floor(minWidths.key * scale)),
+		tag: Math.max(8, Math.floor(minWidths.tag * scale)),
+		expires: Math.max(8, Math.floor(minWidths.expires * scale)),
+		created: Math.max(8, Math.floor(minWidths.created * scale)),
+		token: Math.max(12, Math.floor(minWidths.token * scale))
+	}
 }

@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { Box, Text, useInput } from 'ink'
 import TextInput from 'ink-text-input'
+import EnvVarSelector from './EnvVarSelector.jsx'
 
 function CreateForm({ onSave, onCancel }) {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ function CreateForm({ onSave, onCancel }) {
   });
   
   const [activeField, setActiveField] = useState(0);
+  const [showEnvSelector, setShowEnvSelector] = useState(false);
   const fields = ['key', 'token', 'expiration', 'tag', 'comment', 'env'];
   
   const handleSave = useCallback(() => {
@@ -33,6 +35,10 @@ function CreateForm({ onSave, onCancel }) {
   }, [formData, onSave]);
   
   useInput((input, key) => {
+    if (showEnvSelector) {
+      return
+    }
+    
     if (key.escape) {
       onCancel();
       return;
@@ -51,6 +57,11 @@ function CreateForm({ onSave, onCancel }) {
       }
       return;
     }
+    
+    if ((key.ctrl && input === 'e') || (fields[activeField] === 'env' && key.f2)) {
+      setShowEnvSelector(true);
+      return;
+    }
   });
   
   const handleChange = (field, value) => {
@@ -60,10 +71,23 @@ function CreateForm({ onSave, onCancel }) {
     }));
   };
   
+  const handleEnvSelect = (envVar) => {
+    setFormData(prev => ({
+      ...prev,
+      env: envVar
+    }));
+    setShowEnvSelector(false);
+  };
+  
+  const handleEnvSelectorCancel = () => {
+    setShowEnvSelector(false);
+  };
+  
   const renderField = (fieldName, label, placeholder = '', required = false) => {
     const isActive = fields[activeField] === fieldName;
     const hasValue = formData[fieldName].trim() !== '';
     const isValid = required ? hasValue : true;
+    const showEnvHint = fieldName === 'env' && isActive;
     
     return (
       <Box marginBottom={1}>
@@ -87,9 +111,25 @@ function CreateForm({ onSave, onCancel }) {
             </Text>
           )}
         </Box>
+        {showEnvHint && (
+          <Box marginLeft={2}>
+            <Text color="yellow" dimColor>
+              [Ctrl+E/F2 to select]
+            </Text>
+          </Box>
+        )}
       </Box>
     );
   };
+  
+  if (showEnvSelector) {
+    return (
+      <EnvVarSelector
+        onSelect={handleEnvSelect}
+        onCancel={handleEnvSelectorCancel}
+      />
+    )
+  }
   
   return (
     <Box
@@ -116,7 +156,7 @@ function CreateForm({ onSave, onCancel }) {
       
       <Box marginTop={2} borderStyle="single" borderColor="gray" padding={1}>
         <Text dimColor>
-          Press [Tab] to navigate fields, [Enter] to save, [Esc] to cancel
+          Press [Tab] to navigate fields, [Ctrl+E/F2] to select env var, [Enter] to save, [Esc] to cancel
         </Text>
       </Box>
     </Box>
