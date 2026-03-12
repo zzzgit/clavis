@@ -4,7 +4,10 @@
       "Bash(ls -la *.md)",
       "Bash(git add:*)",
       "Bash(git rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cd \"D:\\\\projects\\\\clavis\" && npm run lint)",
+      "Bash(cd \"D:\\\\projects\\\\clavis\" && node -c src/tui/components/EnvVarSelector.jsx)",
+      "Bash(fnm env:*)"
     ]
   }
 }

@@ -145,3 +145,6 @@ temp/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# Claude Code local settings
+.claude/settings.local.json
