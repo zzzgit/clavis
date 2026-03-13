@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node dist/index.js",
+    "go": "npm run build && node dist/index.js tui",
     "dev": "tsx src/index.js",
     "dev:tui": "tsx src/tui/index.js",
     "build": "tsup",
