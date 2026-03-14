@@ -12,6 +12,7 @@ function Footer({ selectedToken, isEditing, isCreating, showHelp, isSelectingEnv
         paddingX={1}
         paddingY={0}
         justifyContent="space-between"
+        width="100%"
       >
         <Text color="yellow">Select Env Var</Text>
         <Text dimColor>[↑↓] Navigate  [Enter] Select  [Ctrl+U] Clear  [Esc] Cancel</Text>
@@ -27,6 +28,7 @@ function Footer({ selectedToken, isEditing, isCreating, showHelp, isSelectingEnv
         paddingX={1}
         paddingY={0}
         justifyContent="center"
+        width="100%"
       >
         <Text color="cyan">Press any key to close help</Text>
       </Box>
@@ -41,6 +43,7 @@ function Footer({ selectedToken, isEditing, isCreating, showHelp, isSelectingEnv
         paddingX={1}
         paddingY={0}
         justifyContent="space-between"
+        width="100%"
       >
         <Text color="blue">Creating New Token</Text>
         <Text dimColor>[Tab] Next  [Ctrl+E] Env Var  [Enter] Save  [Esc] Cancel</Text>
@@ -56,6 +59,7 @@ function Footer({ selectedToken, isEditing, isCreating, showHelp, isSelectingEnv
         paddingX={1}
         paddingY={0}
         justifyContent="space-between"
+        width="100%"
       >
         <Text color="green">Editing: {selectedToken?.key}</Text>
         <Text dimColor>[Tab] Next [Shift+Tab] Prev [Enter] Save [Esc] Cancel</Text>
@@ -70,6 +74,7 @@ function Footer({ selectedToken, isEditing, isCreating, showHelp, isSelectingEnv
       paddingX={1}
       paddingY={0}
       justifyContent="space-between"
+      width="100%"
     >
       <Box>
         <Text>
