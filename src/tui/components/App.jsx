@@ -31,7 +31,7 @@ function App({ tokens: initialTokens, storage }) {
   const [isCreating, setIsCreating] = useState(false)
   const [warning, setWarning] = useState(null)
   const [isSelectingEnvVar, setIsSelectingEnvVar] = useState(false)
-  const [envVarCallback, setEnvVarCallback] = useState(null)
+  const [pendingEnvVar, setPendingEnvVar] = useState(null)
   
   useEffect(() => {
     if (!stdout) return;
@@ -172,20 +172,17 @@ function App({ tokens: initialTokens, storage }) {
     setShowSearch(false);
   };
   
-  const handleOpenEnvSelector = (callback) => {
-    setEnvVarCallback(() => callback)
+  const handleOpenEnvSelector = () => {
     setIsSelectingEnvVar(true)
   }
 
   const handleEnvVarSelected = (envVar) => {
-    if (envVarCallback) envVarCallback(envVar)
+    setPendingEnvVar({ value: envVar, id: Date.now() })
     setIsSelectingEnvVar(false)
-    setEnvVarCallback(null)
   }
 
   const handleEnvVarSelectorCancel = () => {
     setIsSelectingEnvVar(false)
-    setEnvVarCallback(null)
   }
 
   const handleCreateToken = async (newTokenData) => {
@@ -249,6 +246,7 @@ function App({ tokens: initialTokens, storage }) {
               onSave={handleCreateToken}
               onCancel={handleCancelCreate}
               onOpenEnvSelector={handleOpenEnvSelector}
+              pendingEnvVar={pendingEnvVar}
             />
           ) : isEditing ? (
             <EditForm
@@ -256,6 +254,7 @@ function App({ tokens: initialTokens, storage }) {
               onSave={handleSaveToken}
               onCancel={handleCancelEdit}
               onOpenEnvSelector={handleOpenEnvSelector}
+              pendingEnvVar={pendingEnvVar}
             />
           ) : showHelp ? (
             <HelpPanel onClose={() => setShowHelp(false)} />

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
 
-function EditForm({ token, onSave, onCancel, onOpenEnvSelector }) {
+function EditForm({ token, onSave, onCancel, onOpenEnvSelector, pendingEnvVar }) {
   const [formData, setFormData] = useState({
     token: token.token,
     expiration: token.expiration || '',
@@ -65,10 +65,16 @@ function EditForm({ token, onSave, onCancel, onOpenEnvSelector }) {
     }
 
     if ((key.ctrl && input === 'e') || (fields[activeField] === 'env' && key.f2)) {
-      onOpenEnvSelector((envVar) => handleChange('env', envVar));
+      onOpenEnvSelector();
       return;
     }
   });
+
+  useEffect(() => {
+    if (pendingEnvVar) {
+      handleChange('env', pendingEnvVar.value);
+    }
+  }, [pendingEnvVar]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({
