@@ -37,7 +37,8 @@ function HelpPanel({ onClose }) {
     <Box
       borderStyle="round"
       borderColor="cyan"
-      padding={2}
+      paddingX={2}
+      paddingY={0}
       flexDirection="column"
       flexGrow={1}
     >
@@ -47,11 +48,7 @@ function HelpPanel({ onClose }) {
         </Text>
       </Box>
       
-      <Box marginBottom={2}>
-        <Text>Press any key to close help</Text>
-      </Box>
-      
-      <Box marginBottom={2} flexDirection="column">
+      <Box marginBottom={1} flexDirection="column">
         <Text bold underline>Navigation</Text>
         {keyBindings.map((binding, index) => (
           <Box key={index} marginLeft={2}>
@@ -63,7 +60,7 @@ function HelpPanel({ onClose }) {
         ))}
       </Box>
       
-       <Box marginBottom={2} flexDirection="column">
+      <Box marginBottom={1} flexDirection="column">
         <Text bold underline>Edit Mode</Text>
         {editModeBindings.map((binding, index) => (
           <Box key={index} marginLeft={2}>
@@ -75,7 +72,7 @@ function HelpPanel({ onClose }) {
         ))}
       </Box>
       
-      <Box marginBottom={2} flexDirection="column">
+      <Box marginBottom={1} flexDirection="column">
         <Text bold underline>Create Mode</Text>
         {createModeBindings.map((binding, index) => (
           <Box key={index} marginLeft={2}>
@@ -87,7 +84,7 @@ function HelpPanel({ onClose }) {
         ))}
       </Box>
       
-      <Box marginBottom={2} flexDirection="column">
+      <Box marginBottom={1} flexDirection="column">
         <Text bold underline>Status Indicators</Text>
         {statusIndicators.map((indicator, index) => (
           <Box key={index} marginLeft={2}>
@@ -99,11 +96,6 @@ function HelpPanel({ onClose }) {
         ))}
       </Box>
       
-      <Box marginTop={2} borderStyle="single" borderColor="gray" padding={1}>
-        <Text dimColor>
-          Clavis Token Manager v1.0.0 • Press any key to return
-        </Text>
-      </Box>
     </Box>
   );
 }

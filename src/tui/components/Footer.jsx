@@ -1,9 +1,24 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 
-function Footer({ selectedToken, isEditing, isCreating, showHelp }) {
+function Footer({ selectedToken, isEditing, isCreating, showHelp, isSelectingEnvVar }) {
   // Keyboard handling is now done in App component using useInput hook
-  
+
+  if (isSelectingEnvVar) {
+    return (
+      <Box
+        borderStyle="round"
+        borderColor="yellow"
+        paddingX={1}
+        paddingY={0}
+        justifyContent="space-between"
+      >
+        <Text color="yellow">Select Env Var</Text>
+        <Text dimColor>[↑↓] Navigate  [Enter] Select  [Ctrl+U] Clear  [Esc] Cancel</Text>
+      </Box>
+    );
+  }
+
   if (showHelp) {
     return (
       <Box
@@ -28,11 +43,11 @@ function Footer({ selectedToken, isEditing, isCreating, showHelp }) {
         justifyContent="space-between"
       >
         <Text color="blue">Creating New Token</Text>
-        <Text dimColor>[Tab] Next [Shift+Tab] Prev [Enter] Save [Esc] Cancel</Text>
+        <Text dimColor>[Tab] Next  [Ctrl+E] Env Var  [Enter] Save  [Esc] Cancel</Text>
       </Box>
     );
   }
-  
+
   if (isEditing) {
     return (
       <Box
@@ -61,17 +76,17 @@ function Footer({ selectedToken, isEditing, isCreating, showHelp }) {
           Selected:{' '}
           {selectedToken ? (
             <Text bold color="cyan">
-              {selectedToken.key}
+              {selectedToken.key.length > 15 ? selectedToken.key.slice(0, 15) + '…' : selectedToken.key}
             </Text>
           ) : (
             <Text dimColor>None</Text>
           )}
         </Text>
       </Box>
-      
+
       <Box>
         <Text dimColor>
-          [↑↓/jk] Navigate • [c] Create • [e] Edit • [d] Delete • [f] Search • [?] Help • [q] Quit
+          c:New  e:Edit  d:Del  f:Find  ?:Help  q:Quit
         </Text>
       </Box>
     </Box>

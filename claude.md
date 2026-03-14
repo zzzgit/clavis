@@ -47,7 +47,8 @@ Clavis is a token management system with a TUI interface. The codebase uses mode
 
 ### TUI-Specific Guidelines
 - Use ANSI escape codes for colors and formatting
-- Handle terminal resizing gracefully
+- **Terminal size baseline is 80×24** — the app must display correctly at this size; terminals smaller than 80×24 are not supported
+- **Responsive layout for larger terminals** — when the user resizes the terminal beyond 80×24, the app should adapt and make good use of the extra space
 - Ensure responsive keyboard navigation
 - Clear console only when necessary to avoid flickering
 

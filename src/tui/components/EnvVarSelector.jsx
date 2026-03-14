@@ -1,24 +1,22 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { Box, Text, useInput } from 'ink'
 import TextInput from 'ink-text-input'
 import { searchVendorEnvVars } from '../data/vendorEnvVars.js'
 
-function EnvVarSelector({ onSelect, onCancel }) {
+const SELECTOR_OVERHEAD = 8 // border(2) + title+margin(2) + search+margin(2) + scroll indicators(2)
+
+function EnvVarSelector({ onSelect, onCancel, availableHeight }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [vendors, setVendors] = useState(searchVendorEnvVars(''))
-  const [scrollOffset, setScrollOffset] = useState(0)
-  const visibleRows = 6
+  const visibleRows = availableHeight ? Math.max(1, availableHeight - SELECTOR_OVERHEAD) : 6
 
-  const handleSearch = useCallback((term) => {
-    setSearchTerm(term)
-    const filteredVendors = searchVendorEnvVars(term)
-    setVendors(filteredVendors)
-    if (selectedIndex >= filteredVendors.length) {
-      setSelectedIndex(Math.max(0, filteredVendors.length - 1))
-    }
-    setScrollOffset(0)
-  }, [selectedIndex])
+  // Compute scrollOffset synchronously to avoid extra render cycles
+  const scrollOffset = useMemo(() => {
+    if (selectedIndex < 0) return 0
+    if (selectedIndex >= visibleRows) return selectedIndex - visibleRows + 1
+    return 0
+  }, [selectedIndex, visibleRows])
 
   const handleSelect = useCallback(() => {
     if (vendors.length > 0 && selectedIndex < vendors.length) {
@@ -60,53 +58,40 @@ function EnvVarSelector({ onSelect, onCancel }) {
       setSearchTerm('')
       setVendors(searchVendorEnvVars(''))
       setSelectedIndex(0)
-      setScrollOffset(0)
       return
     }
   })
 
   useEffect(() => {
-    // Keep selected item visible
-    if (selectedIndex < scrollOffset) {
-      setScrollOffset(selectedIndex)
-    } else if (selectedIndex >= scrollOffset + visibleRows) {
-      setScrollOffset(selectedIndex - visibleRows + 1)
-    }
-  }, [selectedIndex, scrollOffset, visibleRows])
-
-  useEffect(() => {
     const timeoutId = setTimeout(() => {
-      handleSearch(searchTerm)
+      const filteredVendors = searchVendorEnvVars(searchTerm)
+      setVendors(filteredVendors)
+      setSelectedIndex(prev => (prev >= filteredVendors.length ? Math.max(0, filteredVendors.length - 1) : prev))
     }, 150)
 
     return () => clearTimeout(timeoutId)
-  }, [searchTerm, handleSearch])
+  }, [searchTerm])
 
   const renderVendorItem = (vendor, index) => {
     const isSelected = index === selectedIndex
-    const isLast = index === vendors.length - 1
 
     return (
       <Box
         key={`${vendor.name}-${vendor.env}`}
-        flexDirection="column"
-        marginBottom={isLast ? 0 : 1}
+        paddingX={1}
+        paddingY={0}
+        backgroundColor={isSelected ? 'green' : undefined}
+        width="100%"
       >
-        <Box
-          paddingX={1}
-          paddingY={0}
-          backgroundColor={isSelected ? 'green' : undefined}
-        >
-          <Box width={20}>
-            <Text color={isSelected ? 'black' : 'white'} bold={isSelected}>
-              {vendor.name}
-            </Text>
-          </Box>
-          <Box marginLeft={2}>
-            <Text color={isSelected ? 'black' : 'cyan'}>
-              {vendor.env}
-            </Text>
-          </Box>
+        <Box width={20}>
+          <Text color={isSelected ? 'black' : 'white'} bold={isSelected}>
+            {vendor.name}
+          </Text>
+        </Box>
+        <Box marginLeft={2}>
+          <Text color={isSelected ? 'black' : 'cyan'}>
+            {vendor.env}
+          </Text>
         </Box>
       </Box>
     )
@@ -120,21 +105,18 @@ function EnvVarSelector({ onSelect, onCancel }) {
     <Box
       borderStyle="round"
       borderColor="yellow"
-      padding={2}
+      paddingX={2}
+      paddingY={0}
       flexDirection="column"
       flexGrow={1}
     >
-      <Box marginBottom={2}>
+      <Box marginBottom={1}>
         <Text bold color="yellow">
-          🔧 Select Environment Variable
+          Select Environment Variable
         </Text>
       </Box>
-      
-      <Box marginBottom={2}>
-        <Text>Search vendor or environment variable:</Text>
-      </Box>
-      
-      <Box marginBottom={2}>
+
+      <Box marginBottom={1}>
         <Box marginRight={2}>
           <Text color="green">›</Text>
         </Box>
@@ -149,7 +131,7 @@ function EnvVarSelector({ onSelect, onCancel }) {
         </Box>
       </Box>
       
-      <Box marginBottom={2} flexDirection="column" maxHeight={visibleRows * 2 + 2} overflow="hidden">
+      <Box flexGrow={1} flexDirection="column" overflow="hidden">
         {vendors.length === 0 ? (
           <Box padding={1}>
             <Text color="gray">No vendors found matching "{searchTerm}"</Text>
@@ -157,7 +139,7 @@ function EnvVarSelector({ onSelect, onCancel }) {
         ) : (
           <>
             {hasMoreAbove && (
-              <Box paddingX={1} paddingY={0} marginBottom={1}>
+              <Box paddingX={1} paddingY={0}>
                 <Text color="gray" dimColor>↑ More above</Text>
               </Box>
             )}
@@ -165,7 +147,7 @@ function EnvVarSelector({ onSelect, onCancel }) {
               renderVendorItem(vendor, scrollOffset + index)
             )}
             {hasMoreBelow && (
-              <Box paddingX={1} paddingY={0} marginTop={1}>
+              <Box paddingX={1} paddingY={0}>
                 <Text color="gray" dimColor>↓ More below</Text>
               </Box>
             )}
@@ -173,17 +155,6 @@ function EnvVarSelector({ onSelect, onCancel }) {
         )}
       </Box>
       
-      <Box marginBottom={1}>
-        <Text dimColor>
-          Showing {vendors.length} vendor{vendors.length !== 1 ? 's' : ''}
-        </Text>
-      </Box>
-      
-      <Box marginTop={2} borderStyle="single" borderColor="gray" padding={1}>
-        <Text dimColor>
-          Press [↑↓] to navigate, [Enter] to select, [Ctrl+U] to clear search, [Esc] to cancel
-        </Text>
-      </Box>
     </Box>
   )
 }

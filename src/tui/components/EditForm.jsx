@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
-import EnvVarSelector from './EnvVarSelector.jsx';
 
-function EditForm({ token, onSave, onCancel }) {
+function EditForm({ token, onSave, onCancel, onOpenEnvSelector }) {
   const [formData, setFormData] = useState({
     token: token.token,
     expiration: token.expiration || '',
@@ -11,9 +10,8 @@ function EditForm({ token, onSave, onCancel }) {
     comment: token.comment || '',
     env: token.env || ''
   });
-  
+
   const [activeField, setActiveField] = useState(0);
-  const [showEnvSelector, setShowEnvSelector] = useState(false);
   const fields = ['token', 'expiration', 'tag', 'comment', 'env'];
   
   const handleSave = useCallback(() => {
@@ -47,20 +45,16 @@ function EditForm({ token, onSave, onCancel }) {
   }, [formData, token, onSave, onCancel]);
   
   useInput((input, key) => {
-    if (showEnvSelector) {
-      return
-    }
-    
     if (key.escape) {
       onCancel();
       return;
     }
-    
+
     if (key.return) {
       handleSave();
       return;
     }
-    
+
     if (key.tab) {
       if (key.shift) {
         setActiveField(prev => (prev > 0 ? prev - 1 : fields.length - 1));
@@ -69,30 +63,18 @@ function EditForm({ token, onSave, onCancel }) {
       }
       return;
     }
-    
+
     if ((key.ctrl && input === 'e') || (fields[activeField] === 'env' && key.f2)) {
-      setShowEnvSelector(true);
+      onOpenEnvSelector((envVar) => handleChange('env', envVar));
       return;
     }
   });
-  
+
   const handleChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-  };
-  
-  const handleEnvSelect = (envVar) => {
-    setFormData(prev => ({
-      ...prev,
-      env: envVar
-    }));
-    setShowEnvSelector(false);
-  };
-  
-  const handleEnvSelectorCancel = () => {
-    setShowEnvSelector(false);
   };
   
   const renderField = (fieldName, label, placeholder = '') => {
@@ -132,20 +114,12 @@ function EditForm({ token, onSave, onCancel }) {
     );
   };
   
-  if (showEnvSelector) {
-    return (
-      <EnvVarSelector
-        onSelect={handleEnvSelect}
-        onCancel={handleEnvSelectorCancel}
-      />
-    )
-  }
-  
   return (
     <Box
       borderStyle="round"
       borderColor="green"
-      padding={2}
+      paddingX={2}
+      paddingY={0}
       flexDirection="column"
       flexGrow={1}
     >
@@ -167,11 +141,6 @@ function EditForm({ token, onSave, onCancel }) {
         {renderField('env', 'Env Var', 'e.g., GITHUB_TOKEN, API_KEY')}
       </Box>
       
-      <Box marginTop={2} borderStyle="single" borderColor="gray" padding={1}>
-        <Text dimColor>
-          Press [Tab] to navigate fields, [Ctrl+E/F2] to select env var, [Enter] to save, [Esc] to cancel
-        </Text>
-      </Box>
     </Box>
   );
 }

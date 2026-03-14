@@ -25,18 +25,13 @@ function Header({ tokenCount, expiredCount = 0, warningCount = 0, filter }) {
               {expiredCount > 0 && (
                 <Text color="red"> ({expiredCount} expired)</Text>
               )}
+              {tokenCount > 0 && warningCount > 0 && (
+                <Text color="yellow">, {warningCount} expiring</Text>
+              )}
             </Text>
           )}
         </Text>
       </Box>
-      
-      {tokenCount > 0 && warningCount > 0 && (
-        <Box marginTop={0}>
-          <Text dimColor>
-            <Text color="yellow"> {warningCount} expiring soon</Text>
-          </Text>
-        </Box>
-      )}
     </Box>
   );
 }

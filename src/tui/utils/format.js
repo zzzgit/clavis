@@ -89,7 +89,7 @@ export function calculateColumnWidths(terminalWidth) {
 
 	// 5列之间有4个空格间距
 	const columnSpacing = 4
-	const totalMinWidth = Object.values(minWidths).reduce((a, b) => a + b, 0) + columnSpacing + 7 // Borders + spacing
+	const totalMinWidth = Object.values(minWidths).reduce((a, b) => a + b, 0) + columnSpacing
 
 	if (terminalWidth >= totalMinWidth + 20) {
 		// Wide terminal: give extra space to key column
