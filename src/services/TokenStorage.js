@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import Token from '../models/Token.js'
+import ConfigService from './ConfigService.js'
 import {
 	validateKey,
 	validateToken,
@@ -15,9 +16,11 @@ class TokenStorage {
 		this.dataDir = path.resolve(dataDir)
 		this.dataFile = path.join(this.dataDir, 'tokens.json')
 		this.tokens = new Map()
+		this.config = new ConfigService()
 	}
 
 	async init() {
+		await this.config.init()
 		try {
 			await fs.mkdir(this.dataDir, { recursive: true })
 			await this.load()
@@ -72,11 +75,12 @@ class TokenStorage {
 			throw new Error(`Validation failed: ${errors.join(', ')}`)
 		}
 
-		const token = new Token(tokenData)
-
-		if (this.tokens.has(token.key)) {
-			throw new Error(`Token with key "${token.key}" already exists`)
+		if (this.tokens.has(tokenData.key)) {
+			throw new Error(`Token with key "${tokenData.key}" already exists`)
 		}
+
+		const sid = await this.config.getNextSid()
+		const token = new Token({ ...tokenData, sid })
 
 		this.tokens.set(token.key, token)
 		await this.save()

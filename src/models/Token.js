@@ -1,5 +1,6 @@
 class Token {
-	constructor({ key, token, expiration = null, tag = '', comment = '', env = '' }) {
+	constructor({ key, token, expiration = null, tag = '', comment = '', env = '', sid = null }) {
+		this.sid = sid
 		this.key = key
 		this.token = token
 		this.expiration = expiration
@@ -35,6 +36,7 @@ class Token {
 
 	toJSON() {
 		return {
+			sid: this.sid,
 			key: this.key,
 			token: this.token,
 			expiration: this.expiration,
@@ -48,6 +50,7 @@ class Token {
 
 	static fromJSON(data) {
 		const token = new Token(data)
+		if (data.sid !== undefined) { token.sid = data.sid }
 		if (data.createdAt) { token.createdAt = data.createdAt }
 		if (data.updatedAt) { token.updatedAt = data.updatedAt }
 		return token

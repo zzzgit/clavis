@@ -120,6 +120,7 @@ describe('Token Model', () => {
       const json = token.toJSON()
 
       expect(json).toEqual({
+        sid: null,
         key: 'api.github.com',
         token: 'ghp_1234567890abcdef',
         expiration: '2025-12-31',
