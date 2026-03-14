@@ -157,6 +157,11 @@ class TokenStorage {
 		)
 	}
 
+	getBySid(sid) {
+		const sidNum = Number(sid)
+		return Array.from(this.tokens.values()).find(token => token.sid === sidNum) || null
+	}
+
 	searchByTag(tag) {
 		const tokens = this.getAll()
 

@@ -2,6 +2,7 @@
 
 import { program } from 'commander'
 import { createInterface } from 'readline'
+import { spawn } from 'child_process'
 import TokenStorage from './services/TokenStorage.js'
 
 const storage = new TokenStorage()
@@ -185,6 +186,51 @@ program
 			console.error('Make sure all dependencies are installed: npm install')
 			process.exit(1)
 		}
+	})
+
+program
+	.command('exec')
+	.description('Execute a command with a token injected as environment variable')
+	.argument('<sid>', 'Token sid')
+	.allowExcessArguments(true)
+	.action(async (sid) => {
+		const dashDashIndex = process.argv.indexOf('--')
+		if (dashDashIndex === -1 || dashDashIndex >= process.argv.length - 1) {
+			console.error('Usage: clavis exec <sid> -- <command> [args...]')
+			process.exit(1)
+		}
+
+		const commandArgs = process.argv.slice(dashDashIndex + 1)
+
+		await init()
+		const token = storage.getBySid(sid)
+
+		if (!token) {
+			console.error(`✗ Token with sid "${sid}" not found`)
+			process.exit(1)
+		}
+
+		if (!token.env) {
+			console.error(`✗ Token "${token.key}" has no env variable name configured`)
+			process.exit(1)
+		}
+
+		const env = { ...process.env, [token.env]: token.token }
+
+		const child = spawn(commandArgs.join(' '), [], {
+			env,
+			stdio: 'inherit',
+			shell: true
+		})
+
+		child.on('error', (error) => {
+			console.error(`✗ Failed to execute command: ${error.message}`)
+			process.exit(1)
+		})
+
+		child.on('exit', (code) => {
+			process.exit(code ?? 0)
+		})
 	})
 
 program.parse()
