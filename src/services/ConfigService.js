@@ -2,7 +2,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import os from 'os'
 
-const CONFIG_DIR = path.join(os.homedir(), 'clavis')
+const CONFIG_DIR = path.join(os.homedir(), '.config', 'clavis')
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.toml')
 
 /** Minimal TOML parser for integer fields: reads "key = <integer>" lines */
