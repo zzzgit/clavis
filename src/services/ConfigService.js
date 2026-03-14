@@ -46,6 +46,7 @@ class ConfigService {
   }
 
   async save() {
+    await fs.mkdir(path.dirname(this.configFile), { recursive: true })
     await fs.writeFile(this.configFile, serializeTOML(this.config), 'utf8')
   }
 
@@ -56,6 +57,17 @@ class ConfigService {
     await this.save()
     return sid
   }
+
+	/** Returns the current next_sid value without incrementing */
+	peekNextSid() {
+		return this.config.next_sid
+	}
+
+	/** Sets the next_sid value */
+	async setNextSid(sid) {
+		this.config.next_sid = sid
+		await this.save()
+	}
 }
 
 export default ConfigService

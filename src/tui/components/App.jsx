@@ -12,6 +12,7 @@ import SearchInput from './SearchInput.jsx';
 import EnvVarSelector from './EnvVarSelector.jsx';
 import { simpleFuzzySearch } from '../utils/fuzzySearch.js';
 import { getTokenStatus } from '../utils/format.js';
+import { copyToClipboard } from '../utils/clipboard.js';
 
 const HEADER_HEIGHT = 3;
 const FOOTER_HEIGHT = 3;
@@ -77,7 +78,22 @@ function App({ tokens: initialTokens, storage }) {
       setShowDeleteConfirm(true);
       return;
     }
-    
+
+    if (input === 'y' && selectedToken) {
+      if (selectedToken.sid === null || selectedToken.sid === undefined) {
+        showWarning('No sid to copy', 'warning', 'Warning');
+        return;
+      }
+      const textToCopy = String(selectedToken.sid);
+      const success = copyToClipboard(textToCopy);
+      if (success) {
+        showWarning(`Copied sid "${selectedToken.sid}" to clipboard`, 'success', 'Copied');
+      } else {
+        showWarning('Failed to copy to clipboard', 'error', 'Error');
+      }
+      return;
+    }
+
     if (input === 'c') {
       setIsCreating(true);
       return;

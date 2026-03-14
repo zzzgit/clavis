@@ -86,7 +86,7 @@ function Footer({ selectedToken, isEditing, isCreating, showHelp, isSelectingEnv
 
       <Box>
         <Text dimColor>
-          c:New  e:Edit  d:Del  f:Find  ?:Help  q:Quit
+          c:New  e:Edit  d:Del  y:Copy  f:Find  ?:Help  q:Quit
         </Text>
       </Box>
     </Box>
