@@ -12,7 +12,10 @@
       "Bash(npm test:*)",
       "Bash(npx eslint:*)",
       "Bash(node:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(find /d/projects/clavis -type f -name \"*.js\" -o -name \"*.json\" | grep -E \"\\\\.\\(js|json\\)$\" | head -30)",
+      "Bash(find /d/projects/clavis/tests -type f -name \"*.js\" 2>/dev/null | head -10)",
+      "Bash(npm install:*)"
     ]
   }
 }

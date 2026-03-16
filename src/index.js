@@ -4,8 +4,45 @@ import { program } from 'commander'
 import { createInterface } from 'readline'
 import { spawn } from 'child_process'
 import TokenStorage from './services/TokenStorage.js'
+import { setPassword, getPassword } from 'cross-keychain'
 
 const storage = new TokenStorage()
+
+/** Read a password from stdin, hiding input when running in a TTY */
+const readPassword = (prompt) => new Promise((resolve) => {
+	process.stdout.write(prompt)
+
+	if (!process.stdin.isTTY) {
+		// Non-interactive (piped) — read line directly
+		const rl = createInterface({ input: process.stdin })
+		rl.once('line', (line) => { rl.close(); resolve(line) })
+		return
+	}
+
+	// Interactive TTY — hide typed characters
+	process.stdin.setRawMode(true)
+	process.stdin.setEncoding('utf8')
+	let input = ''
+
+	const onData = (ch) => {
+		if (ch === '\r' || ch === '\n') {
+			process.stdin.removeListener('data', onData)
+			process.stdin.setRawMode(false)
+			process.stdout.write('\n')
+			resolve(input)
+		} else if (ch === '\u0003') {
+			process.stdout.write('\n')
+			process.exit(0)
+		} else if (ch === '\u007f') {
+			if (input.length > 0) { input = input.slice(0, -1) }
+		} else {
+			input += ch
+		}
+	}
+
+	process.stdin.resume()
+	process.stdin.on('data', onData)
+})
 
 async function init() {
 	await storage.init()
@@ -231,6 +268,55 @@ program
 		child.on('exit', (code) => {
 			process.exit(code ?? 0)
 		})
+	})
+
+const KEYCHAIN_SERVICE = 'clavis'
+
+const addCmd = program
+	.command('add')
+	.description('Add various types of credentials')
+
+addCmd
+	.command('pwd')
+	.description('Store a password in the OS keychain')
+	.argument('[account]', 'Account name / label', 'default')
+	.action(async (account) => {
+		const password = await readPassword(`Password for "${account}": `)
+
+		if (!password) {
+			console.error('✗ Password cannot be empty')
+			process.exit(1)
+		}
+
+		try {
+			await setPassword(KEYCHAIN_SERVICE, account, password)
+			console.log(`✓ Password stored in keychain (service: ${KEYCHAIN_SERVICE}, account: ${account})`)
+		} catch (error) {
+			console.error('✗ Failed to store password:', error.message)
+			process.exit(1)
+		}
+	})
+
+const getCmd = program
+	.command('get')
+	.description('Retrieve various types of credentials')
+
+getCmd
+	.command('pwd')
+	.description('Retrieve a password from the OS keychain')
+	.argument('[account]', 'Account name / label', 'default')
+	.action(async (account) => {
+		try {
+			const password = await getPassword(KEYCHAIN_SERVICE, account)
+			if (password === null || password === undefined) {
+				console.error(`✗ No password found for account "${account}" in keychain`)
+				process.exit(1)
+			}
+			console.log(password)
+		} catch (error) {
+			console.error('✗ Failed to retrieve password:', error.message)
+			process.exit(1)
+		}
 	})
 
 program.parse()
