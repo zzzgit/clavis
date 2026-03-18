@@ -5,6 +5,7 @@ import { createInterface } from 'readline'
 import { spawn } from 'child_process'
 import TokenStorage from './services/TokenStorage.js'
 import { setPassword, getPassword } from 'cross-keychain'
+import argon2 from 'argon2'
 
 const storage = new TokenStorage()
 
@@ -279,7 +280,7 @@ const addCmd = program
 addCmd
 	.command('pwd')
 	.description('Store a password in the OS keychain')
-	.argument('[account]', 'Account name / label', 'default')
+	.argument('[account]', 'Account name / label', 'master')
 	.action(async (account) => {
 		const password = await readPassword(`Password for "${account}": `)
 
@@ -289,7 +290,8 @@ addCmd
 		}
 
 		try {
-			await setPassword(KEYCHAIN_SERVICE, account, password)
+			const hash = await argon2.hash(password)
+			await setPassword(KEYCHAIN_SERVICE, account, hash)
 			console.log(`✓ Password stored in keychain (service: ${KEYCHAIN_SERVICE}, account: ${account})`)
 		} catch (error) {
 			console.error('✗ Failed to store password:', error.message)
@@ -304,7 +306,7 @@ const getCmd = program
 getCmd
 	.command('pwd')
 	.description('Retrieve a password from the OS keychain')
-	.argument('[account]', 'Account name / label', 'default')
+	.argument('[account]', 'Account name / label', 'master')
 	.action(async (account) => {
 		try {
 			const password = await getPassword(KEYCHAIN_SERVICE, account)
