@@ -2,6 +2,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import Token from '../models/Token.js'
 import ConfigService from './ConfigService.js'
+import { encrypt, decrypt } from './CryptoService.js'
 import {
 	validateKey,
 	validateToken,
@@ -37,8 +38,15 @@ class TokenStorage {
 			const data = await fs.readFile(this.dataFile, 'utf8')
 			const tokensData = JSON.parse(data)
 
+			// Decrypt token fields
+			const decrypted = await Promise.all(
+				tokensData.map(entry =>
+					decrypt(entry.token).then(tokenValue => ({ ...entry, token: tokenValue }))
+				)
+			)
+
 			this.tokens.clear()
-			tokensData.forEach(tokenData => {
+			decrypted.forEach(tokenData => {
 				const token = Token.fromJSON(tokenData)
 				this.tokens.set(token.key, token)
 			})
@@ -55,7 +63,15 @@ class TokenStorage {
 	}
 
 	async save() {
-		const tokensArray = Array.from(this.tokens.values()).map(token => token.toJSON())
+		// Encrypt token fields before writing to disk
+		const tokensArray = await Promise.all(
+			Array.from(this.tokens.values()).map(token =>
+				encrypt(token.token).then(encryptedToken => ({
+					...token.toJSON(),
+					token: encryptedToken
+				}))
+			)
+		)
 		const data = JSON.stringify(tokensArray, null, 2)
 		await fs.writeFile(this.dataFile, data, 'utf8')
 	}
