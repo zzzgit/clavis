@@ -269,10 +269,9 @@ program
 
 		const env = { ...process.env, [token.env]: token.token }
 
-		const child = spawn(commandArgs.join(' '), [], {
+		const child = spawn(commandArgs[0], commandArgs.slice(1), {
 			env,
-			stdio: 'inherit',
-			shell: true
+			stdio: 'inherit'
 		})
 
 		child.on('error', (error) => {
