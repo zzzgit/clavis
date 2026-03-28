@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import TokenStorage from '../../src/services/TokenStorage.js'
 import Token from '../../src/models/Token.js'
 
@@ -8,6 +9,8 @@ describe('TokenStorage - Logic Tests', () => {
     storage = new TokenStorage('./test-data')
     // Manually populate tokens for testing logic without file system
     storage.tokens.clear()
+    // Prevent any test from triggering real file I/O
+    storage.save = jest.fn().mockResolvedValue(undefined)
   })
 
   describe('get and getAll', () => {
@@ -139,6 +142,51 @@ describe('TokenStorage - Logic Tests', () => {
       storage.clear()
 
       expect(storage.getAll()).toHaveLength(0)
+    })
+  })
+
+  describe('update', () => {
+    let tokenA, tokenB
+
+    beforeEach(() => {
+      tokenA = new Token({
+        key: 'api.github.com',
+        token: 'ghp_original',
+        expiration: null,
+        tag: 'github',
+        comment: 'Original'
+      })
+      tokenB = new Token({
+        key: 'api.openai.com',
+        token: 'sk-original',
+        expiration: null,
+        tag: 'openai',
+        comment: 'OpenAI'
+      })
+      storage.tokens.set(tokenA.key, tokenA)
+      storage.tokens.set(tokenB.key, tokenB)
+    })
+
+    test('update with same key updates the token value in place', async () => {
+      const updated = await storage.update('api.github.com', { token: 'ghp_updated' })
+      expect(updated.token).toBe('ghp_updated')
+      expect(storage.get('api.github.com').token).toBe('ghp_updated')
+      expect(storage.getAll()).toHaveLength(2)
+    })
+
+    test('update with new key renames the entry (old key removed, new key present)', async () => {
+      await storage.update('api.github.com', { key: 'api.github.com.v2' })
+      expect(storage.get('api.github.com')).toBeUndefined()
+      expect(storage.get('api.github.com.v2')).toBeDefined()
+      expect(storage.get('api.github.com.v2').key).toBe('api.github.com.v2')
+      expect(storage.getAll()).toHaveLength(2)
+    })
+
+    test('update with duplicate new key throws a conflict error', async () => {
+      // Renaming 'api.github.com' to 'api.openai.com' should be rejected
+      await expect(
+        storage.update('api.github.com', { key: 'api.openai.com' })
+      ).rejects.toThrow()
     })
   })
 
