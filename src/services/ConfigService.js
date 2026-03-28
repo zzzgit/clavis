@@ -5,25 +5,34 @@ import os from 'os'
 const CONFIG_DIR = path.join(os.homedir(), '.config', 'clavis')
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.toml')
 
-/** Minimal TOML parser for integer fields: reads "key = <integer>" lines */
+/** Minimal TOML parser: reads integer and quoted-string fields */
 const parseTOML = (content) => {
   const result = {}
   for (const line of content.split('\n')) {
     const trimmed = line.trim()
     if (!trimmed || trimmed.startsWith('#')) continue
-    const match = trimmed.match(/^(\w+)\s*=\s*(\d+)$/)
-    if (match) {
-      result[match[1]] = parseInt(match[2], 10)
+    const intMatch = trimmed.match(/^(\w+)\s*=\s*(\d+)$/)
+    if (intMatch) {
+      result[intMatch[1]] = parseInt(intMatch[2], 10)
+      continue
+    }
+    const strMatch = trimmed.match(/^(\w+)\s*=\s*"(.*)"$/)
+    if (strMatch) {
+      result[strMatch[1]] = strMatch[2]
     }
   }
   return result
 }
 
-/** Minimal TOML serializer: writes integer fields as "key = value" */
+/** Minimal TOML serializer: writes integers as bare values and strings as quoted */
 const serializeTOML = (data) => {
   const lines = ['# Clavis configuration', '']
   for (const [key, value] of Object.entries(data)) {
-    lines.push(`${key} = ${value}`)
+    if (typeof value === 'string') {
+      lines.push(`${key} = "${value}"`)
+    } else {
+      lines.push(`${key} = ${value}`)
+    }
   }
   return lines.join('\n') + '\n'
 }
@@ -66,6 +75,24 @@ class ConfigService {
 	/** Sets the next_sid value */
 	async setNextSid(sid) {
 		this.config.next_sid = sid
+		await this.save()
+	}
+
+	getGistToken() {
+		return this.config.gist_token || null
+	}
+
+	async setGistToken(token) {
+		this.config.gist_token = token
+		await this.save()
+	}
+
+	getGistId() {
+		return this.config.gist_id || null
+	}
+
+	async setGistId(id) {
+		this.config.gist_id = id
 		await this.save()
 	}
 }

@@ -147,4 +147,31 @@ npm test
 npm run dev:tui
 ```
 
+## Gist Sync Commands
+
+Clavis can back up and restore `tokens.json` via a private GitHub Gist.
+Credentials are stored in `~/.config/clavis/config.toml` as `gist_token` and `gist_id`.
+
+```bash
+# Set GitHub Personal Access Token (needs gist scope)
+clavis add gist-token
+
+# Set an existing Gist ID manually (optional)
+clavis add gist-id <id>
+
+# Upload tokens.json to Gist (creates gist automatically if none exists)
+clavis upload
+
+# Download tokens.json from Gist and overwrite local file
+clavis download
+```
+
+On first `upload` or `download`:
+- If `gist_token` is missing, you will be prompted to enter it.
+- If `gist_id` is missing, a new private gist is created and its ID is saved automatically.
+
+Each upload writes two files to the gist:
+- `tokens.json` — the encrypted token store
+- `...clavis` — metadata (`lastUpload` timestamp and app version)
+
 Remember: Consistency is key. When in doubt, look at existing code for guidance.

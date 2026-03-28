@@ -4,12 +4,21 @@ import { program } from 'commander'
 import { createInterface } from 'readline'
 import { spawn } from 'child_process'
 import { createRequire } from 'module'
+import { promises as fs } from 'fs'
 import TokenStorage from './services/TokenStorage.js'
+import ConfigService from './services/ConfigService.js'
+import gistService from './services/gist.js'
 import { setPassword, getPassword } from 'cross-keychain'
 import argon2 from 'argon2'
 
 const require = createRequire(import.meta.url)
 const { version } = require('../package.json')
+
+/** Read a visible line of input from stdin */
+const readLine = (prompt) => new Promise((resolve) => {
+	const rl = createInterface({ input: process.stdin, output: process.stdout })
+	rl.question(prompt, (answer) => { rl.close(); resolve(answer) })
+})
 
 const storage = new TokenStorage()
 
@@ -340,6 +349,100 @@ getCmd
 			console.log(password)
 		} catch (error) {
 			console.error('✗ Failed to retrieve password:', error.message)
+			process.exit(1)
+		}
+	})
+
+/**
+ * Ensure gist_token and gist_id are present in config.
+ * Prompts for missing values and auto-creates a gist if needed.
+ */
+const ensureGistConfig = (config) => {
+	const ensureToken = config.getGistToken()
+		? Promise.resolve(config.getGistToken())
+		: readPassword('GitHub Personal Access Token: ').then((token) => {
+			if (!token) {
+				console.error('✗ Token cannot be empty')
+				process.exit(1)
+			}
+			return config.setGistToken(token).then(() => token)
+		})
+
+	return ensureToken.then((token) => {
+		const existingId = config.getGistId()
+		if (existingId) {
+			return { token, id: existingId }
+		}
+		process.stdout.write('No gist ID found — creating a new private gist...\n')
+		return gistService.createGist(token, version).then((id) => {
+			return config.setGistId(id).then(() => {
+				console.log(`✓ Gist created: ${id}`)
+				return { token, id }
+			})
+		})
+	})
+}
+
+addCmd
+	.command('gist-token')
+	.description('Set GitHub Personal Access Token for gist sync')
+	.action(async () => {
+		const config = new ConfigService()
+		await config.init()
+		const token = await readPassword('GitHub Personal Access Token: ')
+		if (!token) {
+			console.error('✗ Token cannot be empty')
+			process.exit(1)
+		}
+		await config.setGistToken(token)
+		console.log('✓ Gist token saved to config')
+	})
+
+addCmd
+	.command('gist-id')
+	.description('Set an existing GitHub Gist ID for sync')
+	.argument('<id>', 'Gist ID')
+	.action(async (id) => {
+		const config = new ConfigService()
+		await config.init()
+		await config.setGistId(id)
+		console.log(`✓ Gist ID saved: ${id}`)
+	})
+
+program
+	.command('upload')
+	.description('Upload tokens.json to GitHub Gist')
+	.action(async () => {
+		const config = new ConfigService()
+		await config.init()
+		try {
+			const { token, id } = await ensureGistConfig(config)
+			const storageInstance = new TokenStorage()
+			await storageInstance.init()
+			const tokensContent = await fs.readFile(storageInstance.dataFile, 'utf8')
+			await gistService.upload(token, id, tokensContent, version)
+			console.log(`✓ Uploaded tokens.json to gist ${id}`)
+		} catch (error) {
+			console.error('✗ Upload failed:', error.message)
+			process.exit(1)
+		}
+	})
+
+program
+	.command('download')
+	.description('Download tokens.json from GitHub Gist and overwrite local file')
+	.action(async () => {
+		const config = new ConfigService()
+		await config.init()
+		try {
+			const { token, id } = await ensureGistConfig(config)
+			const content = await gistService.download(token, id)
+			const storageInstance = new TokenStorage()
+			await storageInstance.init()
+			await fs.writeFile(storageInstance.dataFile, content, 'utf8')
+			console.log(`✓ Downloaded tokens.json from gist ${id}`)
+		} catch (error) {
+			console.error('✗ Download failed:', error.message)
 			process.exit(1)
 		}
 	})
