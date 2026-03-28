@@ -17,31 +17,25 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
     return calculateColumnWidths(terminalWidth);
   });
   
-  // 計算可用高度：使用父容器的高度
   const terminalHeight = stdout.rows || 24
-  const availableHeight = Math.max(terminalHeight - 6, 10) // 總高度減去Header、Footer和邊框
-  
-  // 計算顯示的數據範圍
+  const availableHeight = Math.max(terminalHeight - 6, 10)
+
   const { startIndex, endIndex } = useMemo(() => {
     if (tokens.length === 0) {
       return { startIndex: 0, endIndex: 0 }
     }
-    
-    // Table顯示區域高度（減去表頭和滾動指示器）
+
     const tableHeight = Math.max(availableHeight - 4, 5)
-    
-    // 確保selectedIndex在視圖中
+
     let startIndex = 0
     if (selectedIndex >= startIndex + tableHeight) {
       startIndex = selectedIndex - tableHeight + 1
     } else if (selectedIndex < startIndex) {
       startIndex = selectedIndex
     }
-    
-    // 確保startIndex不為負數
+
     startIndex = Math.max(0, startIndex)
-    
-    // 計算endIndex
+
     const endIndex = Math.min(startIndex + tableHeight, tokens.length)
     
     return { startIndex, endIndex }
@@ -189,7 +183,6 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
           )
         })}
         
-        {/* 顯示滾動指示器 */}
         {tokens.length > 0 && (
           <Box marginTop={0} justifyContent="space-between">
             <Text dimColor>
