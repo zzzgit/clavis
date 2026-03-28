@@ -5,6 +5,8 @@ function HelpPanel({ onClose }) {
   const keyBindings = [
     { key: '↑ / k', description: 'Move selection up' },
     { key: '↓ / j', description: 'Move selection down' },
+    { key: 'Home / g', description: 'Jump to first token' },
+    { key: 'End / G', description: 'Jump to last token' },
     { key: 'c', description: 'Create new token' },
     { key: 'e', description: 'Edit selected token' },
     { key: 'd', description: 'Delete selected token' },

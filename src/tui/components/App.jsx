@@ -108,6 +108,10 @@ function App({ tokens: initialTokens, storage }) {
       setSelectedIndex(prev => Math.max(0, prev - 1));
     } else if (key.downArrow || input === 'j') {
       setSelectedIndex(prev => Math.min(Math.max(filteredTokens.length - 1, 0), prev + 1));
+    } else if (key.home || input === 'g') {
+      setSelectedIndex(0);
+    } else if (key.end || input === 'G') {
+      setSelectedIndex(Math.max(filteredTokens.length - 1, 0));
     }
   });
   
