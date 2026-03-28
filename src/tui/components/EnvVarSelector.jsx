@@ -36,20 +36,22 @@ function EnvVarSelector({ onSelect, onCancel, availableHeight }) {
     }
 
     if (key.upArrow) {
-      setSelectedIndex(prev => (prev - 1 + vendors.length) % vendors.length)
+      if (vendors.length > 0) setSelectedIndex(prev => (prev - 1 + vendors.length) % vendors.length)
       return
     }
 
     if (key.downArrow) {
-      setSelectedIndex(prev => (prev + 1) % vendors.length)
+      if (vendors.length > 0) setSelectedIndex(prev => (prev + 1) % vendors.length)
       return
     }
 
     if (key.tab) {
-      if (key.shift) {
-        setSelectedIndex(prev => (prev - 1 + vendors.length) % vendors.length)
-      } else {
-        setSelectedIndex(prev => (prev + 1) % vendors.length)
+      if (vendors.length > 0) {
+        if (key.shift) {
+          setSelectedIndex(prev => (prev - 1 + vendors.length) % vendors.length)
+        } else {
+          setSelectedIndex(prev => (prev + 1) % vendors.length)
+        }
       }
       return
     }
