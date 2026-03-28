@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execSync, spawnSync } from 'child_process'
 
 /**
  * Copy text to system clipboard
@@ -35,7 +35,12 @@ export function copyToClipboard(text) {
 				} catch {
 					// Fallback to using tee with /dev/clipboard if available
 					try {
-						execSync(`echo "${text}" | tee /dev/clipboard`, { stdio: 'pipe' })
+						const echo = spawnSync('echo', [text], { stdio: ['pipe', 'pipe', 'pipe'] })
+						if (echo.status !== 0) return false
+						spawnSync('tee', ['/dev/clipboard'], {
+							input: echo.stdout,
+							stdio: ['pipe', 'ignore', 'ignore'],
+						})
 						return true
 					} catch {
 						return false
