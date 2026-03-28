@@ -142,7 +142,8 @@ function App({ tokens: initialTokens, storage }) {
       await storage.delete(selectedToken.key);
       const updatedTokens = storage.getAll();
       setTokens(updatedTokens);
-      setSelectedIndex(prev => Math.min(prev, updatedTokens.length - 1));
+      const updatedFiltered = simpleFuzzySearch(updatedTokens, filter, ['key', 'tag', 'comment']);
+      setSelectedIndex(prev => Math.min(prev, Math.max(updatedFiltered.length - 1, 0)));
       setShowDeleteConfirm(false);
       showWarning('Token deleted successfully', 'success', 'Success');
     } catch (error) {
