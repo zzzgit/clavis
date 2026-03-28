@@ -45,6 +45,7 @@ const decrypt = (value) => {
 
 	return getAesKey().then(key => {
 		const payload = Buffer.from(value.slice(ENC_PREFIX.length), 'base64')
+		if (payload.length < 28) return Promise.reject(new Error('Corrupted encrypted value: payload too short'))
 		const iv = payload.subarray(0, 12)
 		const authTag = payload.subarray(12, 28)
 		const ciphertext = payload.subarray(28)
