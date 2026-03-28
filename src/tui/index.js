@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import os from 'os'
 import React from 'react'
 import { render } from 'ink'
 import App from './components/App.jsx'
@@ -20,7 +21,21 @@ function cleanupAndExit(exitCode = 0) {
 	process.exit(exitCode)
 }
 
+/** Check that Windows users are on Windows 11 (build 22000+). Exit if not. */
+const checkWindowsVersion = () => {
+	if (os.platform() !== 'win32') return
+	// os.release() returns the NT kernel version, e.g. "10.0.22000"
+	const build = parseInt(os.release().split('.')[2], 10)
+	if (isNaN(build) || build < 22000) {
+		console.error('Error: Clavis requires Windows 11 or later.')
+		console.error(`Detected Windows build: ${os.release()}`)
+		process.exit(1)
+	}
+}
+
 async function main() {
+	checkWindowsVersion()
+
 	// Check if we're in an interactive terminal
 	// Note: process.stdout.isTTY might be undefined in some environments
 	// but we should still try to run if possible
