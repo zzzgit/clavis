@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs'
+import os from 'os'
 import path from 'path'
 import Token from '../models/Token.js'
 import ConfigService from './ConfigService.js'
@@ -12,8 +13,18 @@ import {
 	validateEnv
 } from '../utils/validators.js'
 
+/** Returns the platform-appropriate user data directory for Clavis */
+const getDefaultDataDir = () => {
+	if (process.platform === 'win32') {
+		const appData = process.env.APPDATA || path.join(os.homedir(), 'AppData', 'Roaming')
+		return path.join(appData, 'clavis')
+	}
+	const xdgDataHome = process.env.XDG_DATA_HOME || path.join(os.homedir(), '.local', 'share')
+	return path.join(xdgDataHome, 'clavis')
+}
+
 class TokenStorage {
-	constructor(dataDir = './data') {
+	constructor(dataDir = getDefaultDataDir()) {
 		this.dataDir = path.resolve(dataDir)
 		this.dataFile = path.join(this.dataDir, 'tokens.json')
 		this.tokens = new Map()
