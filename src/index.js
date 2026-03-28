@@ -29,6 +29,7 @@ const readPassword = (prompt) => new Promise((resolve) => {
 		if (ch === '\r' || ch === '\n') {
 			process.stdin.removeListener('data', onData)
 			process.stdin.setRawMode(false)
+			process.stdin.pause()
 			process.stdout.write('\n')
 			resolve(input)
 		} else if (ch === '\u0003') {
@@ -282,10 +283,28 @@ addCmd
 	.description('Store a password in the OS keychain')
 	.argument('[account]', 'Account name / label', 'master')
 	.action(async (account) => {
-		const password = await readPassword(`Password for "${account}": `)
+		// If a password already exists, verify it before allowing update
+		const existing = await getPassword(KEYCHAIN_SERVICE, account).catch(() => null)
+		if (existing) {
+			const current = await readPassword(`Current password for "${account}": `)
+			const valid = await argon2.verify(existing, current).catch(() => false)
+			if (!valid) {
+				console.error('✗ Current password is incorrect')
+				process.exit(1)
+			}
+		}
+
+		const password = await readPassword(`New password for "${account}": `)
 
 		if (!password) {
 			console.error('✗ Password cannot be empty')
+			process.exit(1)
+		}
+
+		const confirm = await readPassword(`Confirm new password for "${account}": `)
+
+		if (password !== confirm) {
+			console.error('✗ Passwords do not match')
 			process.exit(1)
 		}
 
