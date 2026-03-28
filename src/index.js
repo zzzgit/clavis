@@ -3,9 +3,13 @@
 import { program } from 'commander'
 import { createInterface } from 'readline'
 import { spawn } from 'child_process'
+import { createRequire } from 'module'
 import TokenStorage from './services/TokenStorage.js'
 import { setPassword, getPassword } from 'cross-keychain'
 import argon2 from 'argon2'
+
+const require = createRequire(import.meta.url)
+const { version } = require('../package.json')
 
 const storage = new TokenStorage()
 
@@ -79,7 +83,7 @@ function formatTokenList(tokens) {
 program
 	.name('clavis')
 	.description('API Token Management System')
-	.version('1.0.0')
+	.version(version)
 
 program
 	.command('create')
