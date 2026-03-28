@@ -107,7 +107,7 @@ function App({ tokens: initialTokens, storage }) {
     if (key.upArrow || input === 'k') {
       setSelectedIndex(prev => Math.max(0, prev - 1));
     } else if (key.downArrow || input === 'j') {
-      setSelectedIndex(prev => Math.min(filteredTokens.length - 1, prev + 1));
+      setSelectedIndex(prev => Math.min(Math.max(filteredTokens.length - 1, 0), prev + 1));
     }
   });
   
@@ -166,6 +166,7 @@ function App({ tokens: initialTokens, storage }) {
 
   const handleSearch = (searchValue) => {
     setFilter(searchValue);
+    setSelectedIndex(0);
   };
 
   const handleCancelSearch = () => {
