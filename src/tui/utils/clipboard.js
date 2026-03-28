@@ -1,4 +1,4 @@
-import { execSync, spawnSync } from 'child_process'
+import { execSync } from 'child_process'
 
 /**
  * Copy text to system clipboard
@@ -33,18 +33,7 @@ export function copyToClipboard(text) {
 					execSync('xsel --clipboard --input', { input: text })
 					return true
 				} catch {
-					// Fallback to using tee with /dev/clipboard if available
-					try {
-						const echo = spawnSync('echo', [text], { stdio: ['pipe', 'pipe', 'pipe'] })
-						if (echo.status !== 0) return false
-						spawnSync('tee', ['/dev/clipboard'], {
-							input: echo.stdout,
-							stdio: ['pipe', 'ignore', 'ignore'],
-						})
-						return true
-					} catch {
-						return false
-					}
+					return false
 				}
 			}
 		} else {
