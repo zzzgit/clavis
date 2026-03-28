@@ -47,7 +47,10 @@ class TokenStorage {
 	async load() {
 		try {
 			const data = await fs.readFile(this.dataFile, 'utf8')
-			const tokensData = JSON.parse(data)
+			const parsed = JSON.parse(data)
+
+			// Support both new format { sid, tokens } and legacy array format
+			const tokensData = Array.isArray(parsed) ? parsed : parsed.tokens
 
 			// Decrypt token fields
 			const decrypted = await Promise.all(
@@ -83,7 +86,11 @@ class TokenStorage {
 				}))
 			)
 		)
-		const data = JSON.stringify(tokensArray, null, 2)
+		const fileData = {
+			sid: this.config.peekNextSid(),
+			tokens: tokensArray
+		}
+		const data = JSON.stringify(fileData, null, 2)
 		await fs.writeFile(this.dataFile, data, 'utf8')
 	}
 
