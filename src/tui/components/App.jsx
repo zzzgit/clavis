@@ -58,7 +58,12 @@ function App({ tokens: initialTokens, storage }) {
   }).length;
   
   useInput((input, key) => {
-    if (isEditing || isCreating || showSearch || showDeleteConfirm || showHelp || warning) return
+    if (showHelp) {
+      setShowHelp(false)
+      return
+    }
+
+    if (isEditing || isCreating || showSearch || showDeleteConfirm || warning) return
     
     if (input === 'q' || (key.ctrl && input === 'c')) {
       exit()

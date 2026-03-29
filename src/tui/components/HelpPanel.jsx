@@ -9,7 +9,7 @@ function HelpPanel({ onClose }) {
     { key: 'End / G', description: 'Jump to last token' },
     { key: 'c', description: 'Create new token' },
     { key: 'e', description: 'Edit selected token' },
-    { key: 'd', description: 'Delete selected token' },
+    { key: 'dd', description: 'Delete selected token' },
     { key: 'y', description: 'Copy sid to clipboard' },
     { key: 'f', description: 'Filter tokens' },
     { key: '?', description: 'Show/hide this help' },

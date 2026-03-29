@@ -118,7 +118,7 @@ The TUI uses React with the Ink library to create interactive terminal interface
 Both components are integrated into the main App component:
 
 ### ConfirmDialog Usage
-Used for token deletion confirmation:
+Used for token deletion confirmation. The dialog is triggered by double-tapping `d` (`dd`) within 500ms in the main token list view:
 ```jsx
 {showDeleteConfirm && (
   <ConfirmDialog
