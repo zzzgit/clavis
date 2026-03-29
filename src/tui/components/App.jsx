@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, useInput, useApp, useStdout } from 'ink';
 import TokenTable from './TokenTable.jsx';
 import EditForm from './EditForm.jsx';
@@ -32,6 +32,7 @@ function App({ tokens: initialTokens, storage }) {
   const [warning, setWarning] = useState(null)
   const [isSelectingEnvVar, setIsSelectingEnvVar] = useState(false)
   const [pendingEnvVar, setPendingEnvVar] = useState(null)
+  const lastDPressRef = useRef(null)
   
   useEffect(() => {
     if (!stdout) return;
@@ -75,7 +76,13 @@ function App({ tokens: initialTokens, storage }) {
     }
     
     if (input === 'd' && selectedToken) {
-      setShowDeleteConfirm(true);
+      const now = Date.now();
+      if (lastDPressRef.current && now - lastDPressRef.current < 500) {
+        lastDPressRef.current = null;
+        setShowDeleteConfirm(true);
+      } else {
+        lastDPressRef.current = now;
+      }
       return;
     }
 
@@ -145,7 +152,6 @@ function App({ tokens: initialTokens, storage }) {
       const updatedFiltered = simpleFuzzySearch(updatedTokens, filter, ['key', 'tag', 'comment']);
       setSelectedIndex(prev => Math.min(prev, Math.max(updatedFiltered.length - 1, 0)));
       setShowDeleteConfirm(false);
-      showWarning('Token deleted successfully', 'success', 'Success');
     } catch (error) {
       showWarning(`Error deleting token: ${error.message}`, 'error', 'Error');
       setShowDeleteConfirm(false);
