@@ -1,11 +1,10 @@
 import { jest } from '@jest/globals'
 
-// 32-byte AES key encoded as the final `$`-segment of a fake Argon2 hash string
-const FAKE_KEY_B64 = Buffer.alloc(32, 0x41).toString('base64')
-const FAKE_HASH = `$argon2id$v=19$m=65536,t=3,p=4$fakesalt$${FAKE_KEY_B64}`
+// Fake master password stored in keychain; SHA-256 of this string is used as the AES key
+const FAKE_PASSWORD = 'test-master-password'
 
 jest.unstable_mockModule('cross-keychain', () => ({
-  getPassword: jest.fn().mockResolvedValue(FAKE_HASH)
+  getPassword: jest.fn().mockResolvedValue(FAKE_PASSWORD)
 }))
 
 const { encrypt, decrypt } = await import('../../src/services/CryptoService.js')

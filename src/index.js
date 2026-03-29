@@ -9,7 +9,6 @@ import TokenStorage from './services/TokenStorage.js'
 import ConfigService from './services/ConfigService.js'
 import gistService from './services/gist.js'
 import { setPassword, getPassword } from 'cross-keychain'
-import argon2 from 'argon2'
 
 const require = createRequire(import.meta.url)
 const { version } = require('../package.json')
@@ -299,8 +298,7 @@ addCmd
 		const existing = await getPassword(KEYCHAIN_SERVICE, account).catch(() => null)
 		if (existing) {
 			const current = await readPassword(`Current password for "${account}": `)
-			const valid = await argon2.verify(existing, current).catch(() => false)
-			if (!valid) {
+			if (existing !== current) {
 				console.error('✗ Current password is incorrect')
 				process.exit(1)
 			}
@@ -321,8 +319,7 @@ addCmd
 		}
 
 		try {
-			const hash = await argon2.hash(password)
-			await setPassword(KEYCHAIN_SERVICE, account, hash)
+			await setPassword(KEYCHAIN_SERVICE, account, password)
 			console.log(`✓ Password stored in keychain (service: ${KEYCHAIN_SERVICE}, account: ${account})`)
 		} catch (error) {
 			console.error('✗ Failed to store password:', error.message)

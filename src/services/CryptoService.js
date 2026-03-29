@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto'
 import { getPassword } from 'cross-keychain'
 
 const KEYCHAIN_SERVICE = 'clavis'
@@ -7,18 +7,15 @@ const ENC_PREFIX = 'enc:'
 
 let cachedKey = null
 
-/** Derive the 32-byte AES key from the Argon2 hash stored in keychain */
+/** Derive the 32-byte AES key by SHA-256 hashing the password stored in keychain */
 const getAesKey = () => {
 	if (cachedKey) return Promise.resolve(cachedKey)
 
 	return getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT)
-		.then(hash => {
-			if (!hash) throw new Error('Master password not found in keychain. Run: clavis add pwd')
-			const hashOutput = hash.split('$').at(-1)
-			const key = Buffer.from(hashOutput, 'base64')
-			if (key.length !== 32) throw new Error(`Invalid AES key length: ${key.length}, expected 32`)
-			cachedKey = key
-			return key
+		.then(password => {
+			if (!password) throw new Error('Master password not found in keychain. Run: clavis add pwd')
+			cachedKey = createHash('sha256').update(password).digest()
+			return cachedKey
 		})
 }
 
