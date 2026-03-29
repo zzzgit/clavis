@@ -34,7 +34,7 @@ class TokenStorage {
 	async init() {
 		await this.config.init()
 		try {
-			await fs.mkdir(this.dataDir, { recursive: true })
+			await fs.mkdir(this.dataDir, { recursive: true, mode: 0o700 })
 			await this.load()
 		} catch (error) {
 			if (error.code !== 'ENOENT') {

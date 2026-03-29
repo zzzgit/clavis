@@ -47,7 +47,7 @@ class ConfigService {
   }
 
   async init() {
-    await fs.mkdir(CONFIG_DIR, { recursive: true })
+    await fs.mkdir(CONFIG_DIR, { recursive: true, mode: 0o700 })
     try {
       const content = await fs.readFile(this.configFile, 'utf8')
       this.config = { next_sid: 1, ...parseTOML(content) }
@@ -58,7 +58,7 @@ class ConfigService {
   }
 
   async save() {
-    await fs.mkdir(path.dirname(this.configFile), { recursive: true })
+    await fs.mkdir(path.dirname(this.configFile), { recursive: true, mode: 0o700 })
     await fs.writeFile(this.configFile, serializeTOML(this.config), 'utf8')
   }
 
