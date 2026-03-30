@@ -354,15 +354,16 @@ getCmd
  * Prompts for missing values and auto-creates a gist if needed.
  */
 const ensureGistConfig = (config) => {
-	const ensureToken = config.getGistToken()
-		? Promise.resolve(config.getGistToken())
-		: readPassword('GitHub Personal Access Token: ').then((token) => {
+	const ensureToken = config.getGistToken().then((existing) => {
+		if (existing) return existing
+		return readPassword('GitHub Personal Access Token: ').then((token) => {
 			if (!token) {
 				console.error('✗ Token cannot be empty')
 				process.exit(1)
 			}
 			return config.setGistToken(token).then(() => token)
 		})
+	})
 
 	return ensureToken.then((token) => {
 		const existingId = config.getGistId()
@@ -391,7 +392,7 @@ addCmd
 			process.exit(1)
 		}
 		await config.setGistToken(token)
-		console.log('✓ Gist token saved to config')
+		console.log('✓ Gist token saved to OS keychain')
 	})
 
 addCmd

@@ -1,6 +1,10 @@
 import { promises as fs } from 'fs'
 import path from 'path'
 import os from 'os'
+import { getPassword, setPassword } from 'cross-keychain'
+
+const KEYCHAIN_SERVICE = 'clavis'
+const KEYCHAIN_ACCOUNT_GIST_TOKEN = 'gist-token'
 
 const CONFIG_DIR =
   process.platform === 'win32'
@@ -55,6 +59,12 @@ class ConfigService {
       if (error.code !== 'ENOENT') throw error
       await this.save()
     }
+    // Migrate plaintext gist_token from config to OS keychain
+    if (this.config.gist_token) {
+      await setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_GIST_TOKEN, this.config.gist_token)
+      delete this.config.gist_token
+      await this.save()
+    }
   }
 
   async save() {
@@ -81,13 +91,14 @@ class ConfigService {
 		await this.save()
 	}
 
+	/** Retrieves the GitHub token from the OS keychain */
 	getGistToken() {
-		return this.config.gist_token || null
+		return getPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_GIST_TOKEN).then((val) => val || null)
 	}
 
+	/** Stores the GitHub token in the OS keychain */
 	async setGistToken(token) {
-		this.config.gist_token = token
-		await this.save()
+		await setPassword(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT_GIST_TOKEN, token)
 	}
 
 	getGistId() {
