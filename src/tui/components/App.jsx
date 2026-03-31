@@ -9,7 +9,6 @@ import Footer from './Footer.jsx';
 import ConfirmDialog from './ConfirmDialog.jsx';
 import Warning from './Warning.jsx';
 import SearchInput from './SearchInput.jsx';
-import EnvVarSelector from './EnvVarSelector.jsx';
 import { simpleFuzzySearch } from '../utils/fuzzySearch.js';
 import { getTokenStatus } from '../utils/format.js';
 import { copyToClipboard } from '../utils/clipboard.js';
@@ -240,13 +239,7 @@ function App({ tokens: initialTokens, storage }) {
           </Box>
         )}
         <Box flexGrow={1} overflow="hidden">
-          {isSelectingEnvVar ? (
-            <EnvVarSelector
-              onSelect={handleEnvVarSelected}
-              onCancel={handleEnvVarSelectorCancel}
-              availableHeight={contentHeight}
-            />
-          ) : showDeleteConfirm ? (
+          {showDeleteConfirm ? (
             <ConfirmDialog
               message={`Delete token "${selectedToken?.key}"? This action cannot be undone.`}
               onConfirm={handleDeleteToken}
@@ -264,6 +257,10 @@ function App({ tokens: initialTokens, storage }) {
               onCancel={handleCancelCreate}
               onOpenEnvSelector={handleOpenEnvSelector}
               pendingEnvVar={pendingEnvVar}
+              isSelectingEnvVar={isSelectingEnvVar}
+              onEnvVarSelected={handleEnvVarSelected}
+              onEnvVarSelectorCancel={handleEnvVarSelectorCancel}
+              availableHeight={contentHeight}
             />
           ) : isEditing ? (
             <EditForm
@@ -272,6 +269,10 @@ function App({ tokens: initialTokens, storage }) {
               onCancel={handleCancelEdit}
               onOpenEnvSelector={handleOpenEnvSelector}
               pendingEnvVar={pendingEnvVar}
+              isSelectingEnvVar={isSelectingEnvVar}
+              onEnvVarSelected={handleEnvVarSelected}
+              onEnvVarSelectorCancel={handleEnvVarSelectorCancel}
+              availableHeight={contentHeight}
             />
           ) : showHelp ? (
             <HelpPanel onClose={() => setShowHelp(false)} />

@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import TextInput from 'ink-text-input';
+import EnvVarSelector from './EnvVarSelector.jsx';
 
-function EditForm({ token, onSave, onCancel, onOpenEnvSelector, pendingEnvVar }) {
+function EditForm({ token, onSave, onCancel, onOpenEnvSelector, pendingEnvVar, isSelectingEnvVar, onEnvVarSelected, onEnvVarSelectorCancel, availableHeight }) {
   const [formData, setFormData] = useState({
     token: token.token,
     expiration: token.expiration || '',
@@ -45,6 +46,8 @@ function EditForm({ token, onSave, onCancel, onOpenEnvSelector, pendingEnvVar })
   }, [formData, token, onSave, onCancel]);
   
   useInput((input, key) => {
+    if (isSelectingEnvVar) return;
+
     if (key.escape) {
       onCancel();
       return;
@@ -120,6 +123,16 @@ function EditForm({ token, onSave, onCancel, onOpenEnvSelector, pendingEnvVar })
     );
   };
   
+  if (isSelectingEnvVar) {
+    return (
+      <EnvVarSelector
+        onSelect={onEnvVarSelected}
+        onCancel={onEnvVarSelectorCancel}
+        availableHeight={availableHeight}
+      />
+    )
+  }
+
   return (
     <Box
       borderStyle="round"
