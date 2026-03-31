@@ -287,7 +287,7 @@ const KEYCHAIN_SERVICE = 'clavis'
 
 const addCmd = program
 	.command('add')
-	.description('Add various types of credentials')
+	.description('Add credentials (pwd | gist-token | gist-id — run "clavis add --help")')
 
 addCmd
 	.command('pwd')
@@ -443,5 +443,10 @@ program
 			process.exit(1)
 		}
 	})
+
+program.addHelpText('after', `
+Gist sync sub-commands (via "clavis add"):
+  clavis add gist-token          Set GitHub Personal Access Token for gist sync
+  clavis add gist-id <id>        Set an existing GitHub Gist ID for sync`)
 
 program.parse()
