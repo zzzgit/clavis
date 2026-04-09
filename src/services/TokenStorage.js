@@ -64,9 +64,6 @@ class TokenStorage {
 				const token = Token.fromJSON(tokenData)
 				this.tokens.set(token.key, token)
 			})
-
-			// Migrate existing tokens that don't have sid
-			await this.migrateSids()
 		} catch (error) {
 			if (error.code === 'ENOENT') {
 				this.tokens.clear()
@@ -214,34 +211,6 @@ class TokenStorage {
 		return this.save()
 	}
 
-	/** Migrate existing tokens that don't have sid */
-	async migrateSids() {
-		const tokensWithoutSid = Array.from(this.tokens.values()).filter(
-			token => token.sid === null || token.sid === undefined
-		)
-
-		if (tokensWithoutSid.length === 0) {
-			return
-		}
-
-		// Get current next_sid value
-		let nextSid = this.config.peekNextSid()
-		let needsSave = false
-
-		// Assign sids to tokens without them
-		for (const token of tokensWithoutSid) {
-			token.sid = nextSid
-			nextSid++
-			needsSave = true
-		}
-
-		if (needsSave) {
-			// Update config with new next_sid value
-			await this.config.setNextSid(nextSid)
-			// Save tokens with new sids
-			await this.save()
-		}
-	}
 }
 
 export default TokenStorage
