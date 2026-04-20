@@ -1,15 +1,15 @@
-# Clavis - API Token Management System
+# Clavis - Secret Management System
 
-A command-line interface (CLI) tool for managing API tokens with support for hierarchical key organization and fuzzy search.
+A command-line interface (CLI) tool for managing secrets with support for hierarchical key organization and fuzzy search.
 
 ## Features
 
-- **Token Management**: Create, read, update, and delete API tokens
+- **Secret Management**: Create, read, update, and delete secrets
 - **Hierarchical Keys**: Support for dot-separated keys (e.g., `foo.bar.baz`)
-- **Fuzzy Search**: Search tokens by key patterns
-- **Tag System**: Categorize tokens with tags
+- **Fuzzy Search**: Search secrets by key patterns
+- **Tag System**: Categorize secrets with tags
 - **Expiration Tracking**: Optional expiration dates with visual indicators
-- **Data Persistence**: Tokens stored in JSON format
+- **Data Persistence**: Secrets stored in JSON format
 - **Validation**: Comprehensive input validation
 
 ## Installation
@@ -28,50 +28,50 @@ npm link
 
 ## Usage
 
-### Create a new token
+### Create a new secret
 ```bash
 clavis create --key "api.github.production" --token "ghp_abc123" --tag "github" --comment "Production API token"
 ```
 
-### List all tokens
+### List all secrets
 ```bash
 clavis list
 ```
 
-### Search tokens by key pattern
+### Search secrets by key pattern
 ```bash
 clavis list --search "github"
 clavis list --search "api"
 ```
 
-### Filter tokens by tag
+### Filter secrets by tag
 ```bash
 clavis list --tag "github"
 ```
 
-### Show token details
+### Show secret details
 ```bash
 clavis show "api.github.production"
 ```
 
-### Update a token
+### Update a secret
 ```bash
 clavis update "api.github.production" --token "ghp_newtoken123" --expiration "2024-12-31"
 ```
 
-### Delete a token
+### Delete a secret
 ```bash
 clavis delete "api.github.production"
 ```
 
-### Clear all tokens (with confirmation)
+### Clear all secrets (with confirmation)
 ```bash
 clavis clear
 ```
 
-## Token Structure
+## Secret Structure
 
-Each token record contains:
+Each secret record contains:
 - **key** (required): Hierarchical identifier (e.g., `service.environment.scope`)
 - **token** (required): The actual API token value
 - **expiration** (optional): Expiration date in YYYY-MM-DD format
@@ -134,7 +134,7 @@ The AES key is derived from the Argon2 hash, so:
 
 ## Data Storage
 
-Tokens are stored in `data/tokens.json` in the project directory. The file is automatically created and managed by the application. Token values in this file are always AES-256-GCM encrypted (see Security Architecture above).
+Secrets are stored in `data/tokens.json` in the project directory. The file is automatically created and managed by the application. Token values in this file are always AES-256-GCM encrypted (see Security Architecture above).
 
 ## TUI Interface
 
@@ -165,9 +165,9 @@ src/
 │   │   └── ...
 │   └── utils/        # TUI utilities
 ├── models/
-│   └── Token.js      # Token data model
+│   └── Secret.js      # Secret data model
 ├── services/
-│   └── TokenStorage.js # Storage and business logic
+│   └── SecretStorage.js # Storage and business logic
 └── utils/
     └── validators.js # Input validation
 ```

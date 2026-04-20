@@ -37,8 +37,8 @@ The TUI uses React with the Ink library to create interactive terminal interface
 **Usage Example**:
 ```jsx
 <ConfirmDialog
-  message="Delete token 'api.github.production'? This action cannot be undone."
-  title="Delete Token"
+  message="Delete secret 'api.github.production'? This action cannot be undone."
+  title="Delete Secret"
   type="danger"
   onConfirm={handleDelete}
   onCancel={handleCancel}
@@ -46,7 +46,7 @@ The TUI uses React with the Ink library to create interactive terminal interface
 ```
 
 **When to Use**:
-- Deleting tokens or data
+- Deleting secrets or data
 - Overwriting existing data
 - Performing irreversible actions
 - Any operation that requires explicit user consent
@@ -78,7 +78,7 @@ The TUI uses React with the Ink library to create interactive terminal interface
 ```jsx
 // Success notification
 <Warning
-  message="Token created successfully"
+  message="Secret created successfully"
   title="Success"
   type="success"
   autoClose={true}
@@ -88,7 +88,7 @@ The TUI uses React with the Ink library to create interactive terminal interface
 
 // Error notification
 <Warning
-  message="Error saving token: Invalid token format"
+  message="Error saving secret: Invalid token format"
   title="Error"
   type="error"
   onClose={hideNotification}
@@ -118,12 +118,12 @@ The TUI uses React with the Ink library to create interactive terminal interface
 Both components are integrated into the main App component:
 
 ### ConfirmDialog Usage
-Used for token deletion confirmation. The dialog is triggered by double-tapping `d` (`dd`) within 500ms in the main token list view:
+Used for secret deletion confirmation. The dialog is triggered by double-tapping `d` (`dd`) within 500ms in the main secret list view:
 ```jsx
 {showDeleteConfirm && (
   <ConfirmDialog
-    message={`Delete token "${selectedToken?.key}"? This action cannot be undone.`}
-    onConfirm={handleDeleteToken}
+    message={`Delete secret "${selectedSecret?.key}"? This action cannot be undone.`}
+    onConfirm={handleDeleteSecret}
     onCancel={handleCancelDelete}
   />
 )}
@@ -133,10 +133,10 @@ Used for token deletion confirmation. The dialog is triggered by double-tapping 
 Used for operation feedback through the `showWarning` helper:
 ```javascript
 // Show success message
-showWarning('Token created successfully', 'success', 'Success');
+showWarning('Secret created successfully', 'success', 'Success');
 
 // Show error message
-showWarning(`Error saving token: ${error.message}`, 'error', 'Error');
+showWarning(`Error saving secret: ${error.message}`, 'error', 'Error');
 ```
 
 ## Design Principles

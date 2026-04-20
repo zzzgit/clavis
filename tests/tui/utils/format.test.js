@@ -1,6 +1,6 @@
 import { parseISO } from 'date-fns'
 import {
-  getTokenStatus,
+  getSecretStatus,
   truncateKey,
   truncateTag,
   formatExpiration,
@@ -10,10 +10,10 @@ import {
 } from '../../../src/tui/utils/format.js'
 
 describe('Format Utilities', () => {
-  describe('getTokenStatus', () => {
-    test('should return active for token without expiration', () => {
-      const token = { expiration: null }
-      const status = getTokenStatus(token)
+  describe('getSecretStatus', () => {
+    test('should return active for secret without expiration', () => {
+      const secret = { expiration: null }
+      const status = getSecretStatus(secret)
 
       expect(status.char).toBe('✓')
       expect(status.color).toBe('green')
@@ -23,9 +23,9 @@ describe('Format Utilities', () => {
     test('should return expired for past expiration date', () => {
       const pastDate = new Date()
       pastDate.setDate(pastDate.getDate() - 1)
-      const token = { expiration: pastDate.toISOString() }
+      const secret = { expiration: pastDate.toISOString() }
 
-      const status = getTokenStatus(token)
+      const status = getSecretStatus(secret)
 
       expect(status.char).toBe('✗')
       expect(status.color).toBe('red')
@@ -35,9 +35,9 @@ describe('Format Utilities', () => {
     test('should return warning for expiration within 7 days', () => {
       const futureDate = new Date()
       futureDate.setDate(futureDate.getDate() + 3)
-      const token = { expiration: futureDate.toISOString() }
+      const secret = { expiration: futureDate.toISOString() }
 
-      const status = getTokenStatus(token)
+      const status = getSecretStatus(secret)
 
       expect(status.char).toBe('!')
       expect(status.color).toBe('yellow')
@@ -47,9 +47,9 @@ describe('Format Utilities', () => {
     test('should return active for expiration beyond 7 days', () => {
       const futureDate = new Date()
       futureDate.setDate(futureDate.getDate() + 10)
-      const token = { expiration: futureDate.toISOString() }
+      const secret = { expiration: futureDate.toISOString() }
 
-      const status = getTokenStatus(token)
+      const status = getSecretStatus(secret)
 
       expect(status.char).toBe('✓')
       expect(status.color).toBe('green')

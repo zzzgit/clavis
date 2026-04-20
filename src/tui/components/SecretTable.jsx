@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Text, useStdout } from 'ink';
 import {
-  getTokenStatus,
+  getSecretStatus,
   truncateKey,
   truncateTag,
   formatExpiration,
@@ -10,13 +10,13 @@ import {
   calculateColumnWidths
 } from '../utils/format.js';
 
-function TokenTable({ tokens, selectedIndex, onSelect }) {
+function SecretTable({ tokens, selectedIndex, onSelect }) {
   const { stdout } = useStdout()
   const [columnWidths, setColumnWidths] = useState(() => {
     const terminalWidth = stdout.columns || 80;
     return calculateColumnWidths(terminalWidth);
   });
-  
+
   const terminalHeight = stdout.rows || 24
   const availableHeight = Math.max(terminalHeight - 6, 10)
 
@@ -37,22 +37,22 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
     startIndex = Math.max(0, startIndex)
 
     const endIndex = Math.min(startIndex + tableHeight, tokens.length)
-    
+
     return { startIndex, endIndex }
   }, [tokens.length, selectedIndex, availableHeight])
-  
+
   useEffect(() => {
     const handleResize = () => {
       const terminalWidth = stdout.columns || 80;
       setColumnWidths(calculateColumnWidths(terminalWidth));
     };
-    
+
     stdout.on('resize', handleResize);
     return () => {
       stdout.off('resize', handleResize);
     };
   }, [stdout]);
-  
+
   if (tokens.length === 0) {
     return (
       <Box
@@ -63,14 +63,14 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
         alignItems="center"
         flexGrow={1}
       >
-        <Text color="yellow">No tokens found. Press 'q' to quit.</Text>
+        <Text color="yellow">No secrets found. Press 'q' to quit.</Text>
       </Box>
     );
   }
-  
+
   const renderHeader = () => {
     const { key, tag, expires, created, token } = columnWidths;
-    
+
     return (
       <Box>
         <Text
@@ -115,74 +115,74 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
       </Box>
     );
   };
-  
-  const renderRow = (token, index) => {
+
+  const renderRow = (secret, index) => {
     const isSelected = index === selectedIndex;
-    const status = getTokenStatus(token);
+    const status = getSecretStatus(secret);
     const { key, tag, expires, created, token: tokenWidth } = columnWidths;
-    
+
     return (
       <Box backgroundColor={isSelected ? 'blue' : undefined}>
         <Text
           width={key}
           color={isSelected ? 'white' : 'white'}
         >
-          {truncateKey(token.key, key)}
+          {truncateKey(secret.key, key)}
         </Text>
         <Text> </Text>
-        
+
         <Text
           width={tag}
           color={isSelected ? 'white' : 'cyan'}
         >
-          {truncateTag(token.tag, tag)}
+          {truncateTag(secret.tag, tag)}
         </Text>
         <Text> </Text>
-        
+
         <Text
           width={expires}
           color={isSelected ? 'white' : status.color}
         >
-          {formatExpiration(token.expiration, expires)}
+          {formatExpiration(secret.expiration, expires)}
         </Text>
         <Text> </Text>
-        
+
         <Text
           width={created}
           color={isSelected ? 'white' : 'gray'}
         >
-          {formatCreatedAt(token.createdAt, created)}
+          {formatCreatedAt(secret.createdAt, created)}
         </Text>
         <Text> </Text>
-        
+
         <Text
           width={tokenWidth}
           color={isSelected ? 'white' : 'gray'}
         >
-          {previewToken(token.token, tokenWidth)}
+          {previewToken(secret.token, tokenWidth)}
         </Text>
       </Box>
     );
   };
-  
-  const visibleTokens = tokens.slice(startIndex, endIndex)
-  
+
+  const visibleSecrets = tokens.slice(startIndex, endIndex)
+
   return (
     <Box flexDirection="column" height={availableHeight}>
       <Box marginBottom={1}>
         {renderHeader()}
       </Box>
-      
+
       <Box flexDirection="column" flexGrow={1} overflow="hidden">
-        {visibleTokens.map((token, index) => {
+        {visibleSecrets.map((secret, index) => {
           const actualIndex = startIndex + index
           return (
-            <Box key={token.key} marginBottom={0}>
-              {renderRow(token, actualIndex)}
+            <Box key={secret.key} marginBottom={0}>
+              {renderRow(secret, actualIndex)}
             </Box>
           )
         })}
-        
+
         {tokens.length > 0 && (
           <Box marginTop={0} justifyContent="space-between">
             <Text dimColor>
@@ -201,4 +201,4 @@ function TokenTable({ tokens, selectedIndex, onSelect }) {
   );
 }
 
-export default TokenTable;
+export default SecretTable;

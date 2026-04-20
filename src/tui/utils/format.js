@@ -1,11 +1,11 @@
 import { format, differenceInDays, parseISO } from 'date-fns'
 
-export function getTokenStatus(token) {
-	if (!token.expiration) {
+export function getSecretStatus(secret) {
+	if (!secret.expiration) {
 		return { char: '✓', color: 'green', label: 'Active' }
 	}
 
-	const expDate = parseISO(token.expiration)
+	const expDate = parseISO(secret.expiration)
 	const now = new Date()
 	const diffDays = differenceInDays(expDate, now)
 

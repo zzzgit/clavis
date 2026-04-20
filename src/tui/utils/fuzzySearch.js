@@ -101,7 +101,7 @@ export const calculateRelevanceScore = (text, pattern) => {
  * @param {Array} fields - Fields to search in (default: ['key', 'tag', 'comment'])
  * @returns {Array} - Filtered and sorted tokens by relevance
  */
-export const fuzzySearchTokens = (tokens, searchTerm, fields = ['key', 'tag', 'comment']) => {
+export const fuzzySearchSecrets = (tokens, searchTerm, fields = ['key', 'tag', 'comment']) => {
 	if (!searchTerm.trim()) {
 		return tokens
 	}

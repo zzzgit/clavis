@@ -1,4 +1,4 @@
-class Token {
+class Secret {
 	constructor({ key, token, expiration = null, tag = '', comment = '', env = '', sid = null }) {
 		this.sid = sid
 		this.key = key
@@ -49,12 +49,12 @@ class Token {
 	}
 
 	static fromJSON(data) {
-		const token = new Token(data)
-		if (data.sid !== undefined) { token.sid = data.sid }
-		if (data.createdAt) { token.createdAt = data.createdAt }
-		if (data.updatedAt) { token.updatedAt = data.updatedAt }
-		return token
+		const secret = new Secret(data)
+		if (data.sid !== undefined) { secret.sid = data.sid }
+		if (data.createdAt) { secret.createdAt = data.createdAt }
+		if (data.updatedAt) { secret.updatedAt = data.updatedAt }
+		return secret
 	}
 }
 
-export default Token
+export default Secret

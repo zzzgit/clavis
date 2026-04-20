@@ -4,7 +4,7 @@ import os from 'os'
 import React from 'react'
 import { render } from 'ink'
 import App from './components/App.jsx'
-import TokenStorage from '../services/TokenStorage.js'
+import SecretStorage from '../services/SecretStorage.js'
 
 // ANSI escape codes for alternative buffer
 const enterAlternativeBuffer = '\x1b[?1049h'
@@ -62,12 +62,12 @@ async function main() {
 	// Clear screen and move cursor to home position
 	process.stdout.write('\x1b[2J\x1b[H')
 
-	const storage = new TokenStorage()
+	const storage = new SecretStorage()
 	await storage.init()
 
-	const tokens = storage.getAll()
+	const secrets = storage.getAll()
 
-	const app = React.createElement(App, { tokens, storage })
+	const app = React.createElement(App, { secrets, storage })
 	const instance = render(app)
 	
 	// Handle cleanup

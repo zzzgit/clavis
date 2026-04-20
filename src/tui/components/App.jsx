@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, useInput, useApp, useStdout } from 'ink';
-import TokenTable from './TokenTable.jsx';
+import SecretTable from './SecretTable.jsx';
 import EditForm from './EditForm.jsx';
 import CreateForm from './CreateForm.jsx';
 import HelpPanel from './HelpPanel.jsx';
@@ -10,17 +10,17 @@ import ConfirmDialog from './ConfirmDialog.jsx';
 import Warning from './Warning.jsx';
 import SearchInput from './SearchInput.jsx';
 import { simpleFuzzySearch } from '../utils/fuzzySearch.js';
-import { getTokenStatus } from '../utils/format.js';
+import { getSecretStatus } from '../utils/format.js';
 import { copyToClipboard } from '../utils/clipboard.js';
 
 const HEADER_HEIGHT = 3;
 const FOOTER_HEIGHT = 3;
 
-function App({ tokens: initialTokens, storage }) {
+function App({ secrets: initialSecrets, storage }) {
   const { exit } = useApp()
   const { stdout } = useStdout()
   const [terminalHeight, setTerminalHeight] = useState(stdout?.rows ?? 24)
-  const [tokens, setTokens] = useState(initialTokens)
+  const [secrets, setSecrets] = useState(initialSecrets)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isEditing, setIsEditing] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
@@ -32,7 +32,7 @@ function App({ tokens: initialTokens, storage }) {
   const [isSelectingEnvVar, setIsSelectingEnvVar] = useState(false)
   const [pendingEnvVar, setPendingEnvVar] = useState(null)
   const lastDPressRef = useRef(null)
-  
+
   useEffect(() => {
     if (!stdout) return;
     const onResize = () => setTerminalHeight(stdout.rows);
@@ -42,17 +42,17 @@ function App({ tokens: initialTokens, storage }) {
 
   const contentHeight = terminalHeight - HEADER_HEIGHT - FOOTER_HEIGHT;
 
-  const filteredTokens = simpleFuzzySearch(tokens, filter, ['key', 'tag', 'comment']);
-  
-  const selectedToken = filteredTokens[selectedIndex];
-  
-  const expiredTokenCount = tokens.filter(token => {
-    const status = getTokenStatus(token);
+  const filteredSecrets = simpleFuzzySearch(secrets, filter, ['key', 'tag', 'comment']);
+
+  const selectedSecret = filteredSecrets[selectedIndex];
+
+  const expiredSecretCount = secrets.filter(secret => {
+    const status = getSecretStatus(secret);
     return status.label === 'Expired';
   }).length;
-  
-  const warningTokenCount = tokens.filter(token => {
-    const status = getTokenStatus(token);
+
+  const warningSecretCount = secrets.filter(secret => {
+    const status = getSecretStatus(secret);
     return status.label.startsWith('Expires in');
   }).length;
   
@@ -74,12 +74,12 @@ function App({ tokens: initialTokens, storage }) {
       return
     }
     
-    if (input === 'e' && selectedToken) {
+    if (input === 'e' && selectedSecret) {
       setIsEditing(true);
       return;
     }
-    
-    if (input === 'd' && selectedToken) {
+
+    if (input === 'd' && selectedSecret) {
       const now = Date.now();
       if (lastDPressRef.current && now - lastDPressRef.current < 500) {
         lastDPressRef.current = null;
@@ -90,15 +90,15 @@ function App({ tokens: initialTokens, storage }) {
       return;
     }
 
-    if (input === 'y' && selectedToken) {
-      if (selectedToken.sid === null || selectedToken.sid === undefined) {
+    if (input === 'y' && selectedSecret) {
+      if (selectedSecret.sid === null || selectedSecret.sid === undefined) {
         showWarning('No sid to copy', 'warning', 'Warning');
         return;
       }
-      const textToCopy = String(selectedToken.sid);
+      const textToCopy = String(selectedSecret.sid);
       const success = copyToClipboard(textToCopy);
       if (success) {
-        showWarning(`Copied sid "${selectedToken.sid}" to clipboard`, 'success', 'Copied');
+        showWarning(`Copied sid "${selectedSecret.sid}" to clipboard`, 'success', 'Copied');
       } else {
         showWarning('Failed to copy to clipboard', 'error', 'Error');
       }
@@ -118,19 +118,19 @@ function App({ tokens: initialTokens, storage }) {
     if (key.upArrow || input === 'k') {
       setSelectedIndex(prev => Math.max(0, prev - 1));
     } else if (key.downArrow || input === 'j') {
-      setSelectedIndex(prev => Math.min(Math.max(filteredTokens.length - 1, 0), prev + 1));
+      setSelectedIndex(prev => Math.min(Math.max(filteredSecrets.length - 1, 0), prev + 1));
     } else if (key.home || input === 'g') {
       setSelectedIndex(0);
     } else if (key.end || input === 'G') {
-      setSelectedIndex(Math.max(filteredTokens.length - 1, 0));
+      setSelectedIndex(Math.max(filteredSecrets.length - 1, 0));
     }
   });
-  
-  const handleSaveToken = async (updatedToken) => {
+
+  const handleSaveSecret = async (updatedSecret) => {
     try {
-      await storage.update(selectedToken.key, updatedToken);
-      const updatedTokens = storage.getAll();
-      setTokens(updatedTokens);
+      await storage.update(selectedSecret.key, updatedSecret);
+      const updatedSecrets = storage.getAll();
+      setSecrets(updatedSecrets);
       setIsEditing(false);
       showWarning('Token updated successfully', 'success', 'Success');
     } catch (error) {
@@ -146,14 +146,14 @@ function App({ tokens: initialTokens, storage }) {
     setIsCreating(false);
   };
   
-  const handleDeleteToken = async () => {
-    if (!selectedToken) return;
-    
+  const handleDeleteSecret = async () => {
+    if (!selectedSecret) return;
+
     try {
-      await storage.delete(selectedToken.key);
-      const updatedTokens = storage.getAll();
-      setTokens(updatedTokens);
-      const updatedFiltered = simpleFuzzySearch(updatedTokens, filter, ['key', 'tag', 'comment']);
+      await storage.delete(selectedSecret.key);
+      const updatedSecrets = storage.getAll();
+      setSecrets(updatedSecrets);
+      const updatedFiltered = simpleFuzzySearch(updatedSecrets, filter, ['key', 'tag', 'comment']);
       setSelectedIndex(prev => Math.min(prev, Math.max(updatedFiltered.length - 1, 0)));
       setShowDeleteConfirm(false);
     } catch (error) {
@@ -201,11 +201,11 @@ function App({ tokens: initialTokens, storage }) {
     setIsSelectingEnvVar(false)
   }
 
-  const handleCreateToken = async (newTokenData) => {
+  const handleCreateSecret = async (newSecretData) => {
     try {
-      await storage.create(newTokenData);
-      const updatedTokens = storage.getAll();
-      setTokens(updatedTokens);
+      await storage.create(newSecretData);
+      const updatedSecrets = storage.getAll();
+      setSecrets(updatedSecrets);
       setIsCreating(false);
       showWarning('Token created successfully', 'success', 'Success');
     } catch (error) {
@@ -218,9 +218,9 @@ function App({ tokens: initialTokens, storage }) {
       {/* Header */}
       <Box height={HEADER_HEIGHT} flexShrink={0}>
         <Header
-          tokenCount={tokens.length}
-          expiredCount={expiredTokenCount}
-          warningCount={warningTokenCount}
+          tokenCount={secrets.length}
+          expiredCount={expiredSecretCount}
+          warningCount={warningSecretCount}
           filter={filter}
         />
       </Box>
@@ -241,8 +241,8 @@ function App({ tokens: initialTokens, storage }) {
         <Box flexGrow={1} overflow="hidden">
           {showDeleteConfirm ? (
             <ConfirmDialog
-              message={`Delete token "${selectedToken?.key}"? This action cannot be undone.`}
-              onConfirm={handleDeleteToken}
+              message={`Delete token "${selectedSecret?.key}"? This action cannot be undone.`}
+              onConfirm={handleDeleteSecret}
               onCancel={handleCancelDelete}
             />
           ) : showSearch ? (
@@ -253,7 +253,7 @@ function App({ tokens: initialTokens, storage }) {
             />
           ) : isCreating ? (
             <CreateForm
-              onSave={handleCreateToken}
+              onSave={handleCreateSecret}
               onCancel={handleCancelCreate}
               onOpenEnvSelector={handleOpenEnvSelector}
               pendingEnvVar={pendingEnvVar}
@@ -264,8 +264,8 @@ function App({ tokens: initialTokens, storage }) {
             />
           ) : isEditing ? (
             <EditForm
-              token={selectedToken}
-              onSave={handleSaveToken}
+              token={selectedSecret}
+              onSave={handleSaveSecret}
               onCancel={handleCancelEdit}
               onOpenEnvSelector={handleOpenEnvSelector}
               pendingEnvVar={pendingEnvVar}
@@ -277,8 +277,8 @@ function App({ tokens: initialTokens, storage }) {
           ) : showHelp ? (
             <HelpPanel onClose={() => setShowHelp(false)} />
           ) : (
-            <TokenTable
-              tokens={filteredTokens}
+            <SecretTable
+              tokens={filteredSecrets}
               selectedIndex={selectedIndex}
               onSelect={setSelectedIndex}
             />
@@ -289,7 +289,7 @@ function App({ tokens: initialTokens, storage }) {
       {/* Footer - pinned to bottom */}
       <Box height={FOOTER_HEIGHT} flexShrink={0}>
         <Footer
-          selectedToken={selectedToken}
+          selectedToken={selectedSecret}
           isEditing={isEditing}
           isCreating={isCreating}
           showHelp={showHelp}

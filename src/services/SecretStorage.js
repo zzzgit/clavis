@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs'
 import os from 'os'
 import path from 'path'
-import Token from '../models/Token.js'
+import Secret from '../models/Secret.js'
 import ConfigService from './ConfigService.js'
 import { encrypt, decrypt } from './CryptoService.js'
 import {
@@ -23,11 +23,11 @@ const getDefaultDataDir = () => {
 	return path.join(xdgDataHome, 'clavis')
 }
 
-class TokenStorage {
+class SecretStorage {
 	constructor(dataDir = getDefaultDataDir()) {
 		this.dataDir = path.resolve(dataDir)
 		this.dataFile = path.join(this.dataDir, 'tokens.json')
-		this.tokens = new Map()
+		this.secrets = new Map()
 		this.config = new ConfigService()
 	}
 
@@ -59,14 +59,14 @@ class TokenStorage {
 				)
 			)
 
-			this.tokens.clear()
-			decrypted.forEach(tokenData => {
-				const token = Token.fromJSON(tokenData)
-				this.tokens.set(token.key, token)
+			this.secrets.clear()
+			decrypted.forEach(secretData => {
+				const secret = Secret.fromJSON(secretData)
+				this.secrets.set(secret.key, secret)
 			})
 		} catch (error) {
 			if (error.code === 'ENOENT') {
-				this.tokens.clear()
+				this.secrets.clear()
 			} else {
 				throw error
 			}
@@ -76,9 +76,9 @@ class TokenStorage {
 	async save() {
 		// Encrypt token fields before writing to disk
 		const tokensArray = await Promise.all(
-			Array.from(this.tokens.values()).map(token =>
-				encrypt(token.token).then(encryptedToken => ({
-					...token.toJSON(),
+			Array.from(this.secrets.values()).map(secret =>
+				encrypt(secret.token).then(encryptedToken => ({
+					...secret.toJSON(),
 					token: encryptedToken
 				}))
 			)
@@ -91,14 +91,14 @@ class TokenStorage {
 		await fs.writeFile(this.dataFile, data, 'utf8')
 	}
 
-	async create(tokenData) {
+	async create(secretData) {
 		const validationResults = [
-			validateKey(tokenData.key),
-			validateToken(tokenData.token),
-			validateDate(tokenData.expiration),
-			validateTag(tokenData.tag),
-			validateComment(tokenData.comment),
-			validateEnv(tokenData.env)
+			validateKey(secretData.key),
+			validateToken(secretData.token),
+			validateDate(secretData.expiration),
+			validateTag(secretData.tag),
+			validateComment(secretData.comment),
+			validateEnv(secretData.env)
 		]
 
 		const errors = validationResults
@@ -109,26 +109,26 @@ class TokenStorage {
 			throw new Error(`Validation failed: ${errors.join(', ')}`)
 		}
 
-		if (this.tokens.has(tokenData.key)) {
-			throw new Error(`Token with key "${tokenData.key}" already exists`)
+		if (this.secrets.has(secretData.key)) {
+			throw new Error(`Secret with key "${secretData.key}" already exists`)
 		}
 
 		const sid = await this.config.getNextSid()
-		const token = new Token({ ...tokenData, sid })
+		const secret = new Secret({ ...secretData, sid })
 
-		this.tokens.set(token.key, token)
+		this.secrets.set(secret.key, secret)
 		await this.save()
-		return token
+		return secret
 	}
 
 	async update(key, updates) {
-		const token = this.tokens.get(key)
-		if (!token) {
-			throw new Error(`Token with key "${key}" not found`)
+		const secret = this.secrets.get(key)
+		if (!secret) {
+			throw new Error(`Secret with key "${key}" not found`)
 		}
 
 		const updatedData = {
-			...token.toJSON(),
+			...secret.toJSON(),
 			...updates,
 			updatedAt: new Date().toISOString()
 		}
@@ -150,67 +150,75 @@ class TokenStorage {
 			throw new Error(`Validation failed: ${errors.join(', ')}`)
 		}
 
-		const updatedToken = new Token(updatedData)
-		this.tokens.set(key, updatedToken)
+		const newKey = updates.key !== undefined ? updates.key : key
+		if (newKey !== key && this.secrets.has(newKey)) {
+			throw new Error(`Secret with key "${newKey}" already exists`)
+		}
+
+		const updatedSecret = new Secret(updatedData)
+		if (newKey !== key) {
+			this.secrets.delete(key)
+		}
+		this.secrets.set(newKey, updatedSecret)
 		await this.save()
-		return updatedToken
+		return updatedSecret
 	}
 
 	async delete(key) {
-		if (!this.tokens.has(key)) {
-			throw new Error(`Token with key "${key}" not found`)
+		if (!this.secrets.has(key)) {
+			throw new Error(`Secret with key "${key}" not found`)
 		}
 
-		this.tokens.delete(key)
+		this.secrets.delete(key)
 		await this.save()
 		return true
 	}
 
 	get(key) {
-		return this.tokens.get(key)
+		return this.secrets.get(key)
 	}
 
 	getAll() {
-		return Array.from(this.tokens.values())
+		return Array.from(this.secrets.values())
 	}
 
 	searchByKey(pattern) {
-		const tokens = this.getAll()
+		const secrets = this.getAll()
 
 		if (!pattern || pattern.trim() === '') {
-			return tokens
+			return secrets
 		}
 
 		const searchPattern = pattern.toLowerCase()
-		return tokens.filter(token =>
-			token.key.toLowerCase().includes(searchPattern) ||
-      token.key.toLowerCase().split('.').some(part => part.includes(searchPattern))
+		return secrets.filter(secret =>
+			secret.key.toLowerCase().includes(searchPattern) ||
+      secret.key.toLowerCase().split('.').some(part => part.includes(searchPattern))
 		)
 	}
 
 	getBySid(sid) {
 		const sidNum = Number(sid)
-		return Array.from(this.tokens.values()).find(token => token.sid === sidNum) || null
+		return Array.from(this.secrets.values()).find(secret => secret.sid === sidNum) || null
 	}
 
 	searchByTag(tag) {
-		const tokens = this.getAll()
+		const secrets = this.getAll()
 
 		if (!tag || tag.trim() === '') {
-			return tokens
+			return secrets
 		}
 
 		const searchTag = tag.toLowerCase()
-		return tokens.filter(token =>
-			token.tag && token.tag.toLowerCase().includes(searchTag)
+		return secrets.filter(secret =>
+			secret.tag && secret.tag.toLowerCase().includes(searchTag)
 		)
 	}
 
 	clear() {
-		this.tokens.clear()
+		this.secrets.clear()
 		return this.save()
 	}
 
 }
 
-export default TokenStorage
+export default SecretStorage

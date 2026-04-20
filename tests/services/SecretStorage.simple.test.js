@@ -1,34 +1,33 @@
 import { jest } from '@jest/globals'
-import TokenStorage from '../../src/services/TokenStorage.js'
-import Token from '../../src/models/Token.js'
+import SecretStorage from '../../src/services/SecretStorage.js'
+import Secret from '../../src/models/Secret.js'
 
-describe('TokenStorage - Logic Tests', () => {
+describe('SecretStorage - Logic Tests', () => {
   let storage
 
   beforeEach(() => {
-    storage = new TokenStorage('./test-data')
-    // Manually populate tokens for testing logic without file system
-    storage.tokens.clear()
+    storage = new SecretStorage('./test-data')
+    // Manually populate secrets for testing logic without file system
+    storage.secrets.clear()
     // Prevent any test from triggering real file I/O
     storage.save = jest.fn().mockResolvedValue(undefined)
   })
 
   describe('get and getAll', () => {
     test('should return undefined for non-existent key', () => {
-      const token = storage.get('nonexistent')
-      expect(token).toBeUndefined()
+      const secret = storage.get('nonexistent')
+      expect(secret).toBeUndefined()
     })
 
-    test('should get all tokens', () => {
-      // Add tokens manually
-      const token1 = new Token({
+    test('should get all secrets', () => {
+      const secret1 = new Secret({
         key: 'api.github.com',
         token: 'ghp_1234567890abcdef',
         expiration: '2025-12-31',
         tag: 'github',
         comment: 'Personal access token'
       })
-      const token2 = new Token({
+      const secret2 = new Secret({
         key: 'api.openai.com',
         token: 'sk-1234567890abcdef',
         expiration: null,
@@ -36,36 +35,35 @@ describe('TokenStorage - Logic Tests', () => {
         comment: 'API key for GPT'
       })
 
-      storage.tokens.set(token1.key, token1)
-      storage.tokens.set(token2.key, token2)
+      storage.secrets.set(secret1.key, secret1)
+      storage.secrets.set(secret2.key, secret2)
 
-      const tokens = storage.getAll()
-      expect(tokens).toHaveLength(2)
-      expect(tokens[0].key).toBe('api.github.com')
-      expect(tokens[1].key).toBe('api.openai.com')
+      const secrets = storage.getAll()
+      expect(secrets).toHaveLength(2)
+      expect(secrets[0].key).toBe('api.github.com')
+      expect(secrets[1].key).toBe('api.openai.com')
     })
   })
 
   describe('search', () => {
-    let token1, token2, token3
+    let secret1, secret2, secret3
 
     beforeEach(() => {
-      // Create test tokens
-      token1 = new Token({
+      secret1 = new Secret({
         key: 'api.github.com',
         token: 'ghp_1234567890abcdef',
         expiration: '2025-12-31',
         tag: 'github',
         comment: 'Personal access token'
       })
-      token2 = new Token({
+      secret2 = new Secret({
         key: 'api.openai.com',
         token: 'sk-1234567890abcdef',
         expiration: null,
         tag: 'openai',
         comment: 'API key for GPT'
       })
-      token3 = new Token({
+      secret3 = new Secret({
         key: 'internal.api.service',
         token: 'internal_token_123456',
         expiration: null,
@@ -73,9 +71,9 @@ describe('TokenStorage - Logic Tests', () => {
         comment: 'Internal service'
       })
 
-      storage.tokens.set(token1.key, token1)
-      storage.tokens.set(token2.key, token2)
-      storage.tokens.set(token3.key, token3)
+      storage.secrets.set(secret1.key, secret1)
+      storage.secrets.set(secret2.key, secret2)
+      storage.secrets.set(secret3.key, secret3)
     })
 
     test('should search by key pattern', () => {
@@ -89,7 +87,7 @@ describe('TokenStorage - Logic Tests', () => {
       expect(results).toHaveLength(3) // api.github.com, api.openai.com, internal.api.service
     })
 
-    test('should return all tokens for empty pattern', () => {
+    test('should return all secrets for empty pattern', () => {
       const results = storage.searchByKey('')
       expect(results).toHaveLength(3)
     })
@@ -100,7 +98,7 @@ describe('TokenStorage - Logic Tests', () => {
       expect(results[0].tag).toBe('github')
     })
 
-    test('should return all tokens for empty tag', () => {
+    test('should return all secrets for empty tag', () => {
       const results = storage.searchByTag('')
       expect(results).toHaveLength(3)
     })
@@ -110,15 +108,15 @@ describe('TokenStorage - Logic Tests', () => {
       expect(results).toHaveLength(0)
     })
 
-    test('should handle tokens without tags', () => {
-      const tokenWithoutTag = new Token({
+    test('should handle secrets without tags', () => {
+      const secretWithoutTag = new Secret({
         key: 'no.tag.service',
         token: 'token_without_tag',
         expiration: null,
         tag: '',
         comment: 'No tag'
       })
-      storage.tokens.set(tokenWithoutTag.key, tokenWithoutTag)
+      storage.secrets.set(secretWithoutTag.key, secretWithoutTag)
 
       const results = storage.searchByTag('')
       expect(results).toHaveLength(4)
@@ -126,16 +124,15 @@ describe('TokenStorage - Logic Tests', () => {
   })
 
   describe('clear', () => {
-    test('should clear all tokens', () => {
-      // Add some tokens
-      const token1 = new Token({
+    test('should clear all secrets', () => {
+      const secret1 = new Secret({
         key: 'api.github.com',
         token: 'ghp_1234567890abcdef',
         expiration: '2025-12-31',
         tag: 'github',
         comment: 'Personal access token'
       })
-      storage.tokens.set(token1.key, token1)
+      storage.secrets.set(secret1.key, secret1)
 
       expect(storage.getAll()).toHaveLength(1)
 
@@ -146,25 +143,25 @@ describe('TokenStorage - Logic Tests', () => {
   })
 
   describe('update', () => {
-    let tokenA, tokenB
+    let secretA, secretB
 
     beforeEach(() => {
-      tokenA = new Token({
+      secretA = new Secret({
         key: 'api.github.com',
         token: 'ghp_original',
         expiration: null,
         tag: 'github',
         comment: 'Original'
       })
-      tokenB = new Token({
+      secretB = new Secret({
         key: 'api.openai.com',
         token: 'sk-original',
         expiration: null,
         tag: 'openai',
         comment: 'OpenAI'
       })
-      storage.tokens.set(tokenA.key, tokenA)
-      storage.tokens.set(tokenB.key, tokenB)
+      storage.secrets.set(secretA.key, secretA)
+      storage.secrets.set(secretB.key, secretB)
     })
 
     test('update with same key updates the token value in place', async () => {
@@ -183,7 +180,6 @@ describe('TokenStorage - Logic Tests', () => {
     })
 
     test('update with duplicate new key throws a conflict error', async () => {
-      // Renaming 'api.github.com' to 'api.openai.com' should be rejected
       await expect(
         storage.update('api.github.com', { key: 'api.openai.com' })
       ).rejects.toThrow()
@@ -191,17 +187,17 @@ describe('TokenStorage - Logic Tests', () => {
   })
 
   describe('validation integration', () => {
-    let token1
+    let secret1
 
     beforeEach(() => {
-      token1 = new Token({
+      secret1 = new Secret({
         key: 'api.github.com',
         token: 'ghp_1234567890abcdef',
         expiration: '2025-12-31',
         tag: 'github',
         comment: 'Personal access token'
       })
-      storage.tokens.set(token1.key, token1)
+      storage.secrets.set(secret1.key, secret1)
     })
 
     test('should search by key pattern case-insensitive', () => {

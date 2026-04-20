@@ -5,7 +5,7 @@ import { createInterface } from 'readline'
 import { spawn } from 'child_process'
 import { createRequire } from 'module'
 import { promises as fs } from 'fs'
-import TokenStorage from './services/TokenStorage.js'
+import SecretStorage from './services/SecretStorage.js'
 import ConfigService from './services/ConfigService.js'
 import gistService from './services/gist.js'
 import { setPassword, getPassword } from 'cross-keychain'
@@ -19,7 +19,7 @@ const readLine = (prompt) => new Promise((resolve) => {
 	rl.question(prompt, (answer) => { rl.close(); resolve(answer) })
 })
 
-const storage = new TokenStorage()
+const storage = new SecretStorage()
 
 /** Read a password from stdin, hiding input when running in a TTY */
 const readPassword = (prompt) => new Promise((resolve) => {
@@ -62,29 +62,29 @@ async function init() {
 	await storage.init()
 }
 
-function formatToken(token) {
-	const expired = token.expiration && new Date(token.expiration) < new Date()
+function formatSecret(secret) {
+	const expired = secret.expiration && new Date(secret.expiration) < new Date()
 	const status = expired ? '✗ EXPIRED' : '✓ ACTIVE'
 
-	return `${token.key} ${status}
-  Token: ${token.token.substring(0, 20)}...
-  Expiration: ${token.expiration || 'Never'}
-  Tag: ${token.tag || 'None'}
-  Comment: ${token.comment || 'None'}
-  Created: ${new Date(token.createdAt).toLocaleDateString()}
-  Updated: ${new Date(token.updatedAt).toLocaleDateString()}
+	return `${secret.key} ${status}
+  Token: ${secret.token.substring(0, 20)}...
+  Expiration: ${secret.expiration || 'Never'}
+  Tag: ${secret.tag || 'None'}
+  Comment: ${secret.comment || 'None'}
+  Created: ${new Date(secret.createdAt).toLocaleDateString()}
+  Updated: ${new Date(secret.updatedAt).toLocaleDateString()}
   `
 }
 
-function formatTokenList(tokens) {
-	if (tokens.length === 0) {
+function formatSecretList(secrets) {
+	if (secrets.length === 0) {
 		return 'No tokens found'
 	}
 
-	return tokens.map(token => {
-		const expired = token.expiration && new Date(token.expiration) < new Date()
+	return secrets.map(secret => {
+		const expired = secret.expiration && new Date(secret.expiration) < new Date()
 		const status = expired ? '✗' : '✓'
-		return `${status} ${token.key} - ${token.tag || 'No tag'}`
+		return `${status} ${secret.key} - ${secret.tag || 'No tag'}`
 	}).join('\n')
 }
 
@@ -104,7 +104,7 @@ program
 	.action(async (options) => {
 		await init()
 		try {
-			const token = await storage.create({
+			const secret = await storage.create({
 				key: options.key,
 				token: options.token,
 				expiration: options.expiration,
@@ -112,7 +112,7 @@ program
 				comment: options.comment
 			})
 			console.log('✓ Token created successfully')
-			console.log(formatToken(token))
+			console.log(formatSecret(secret))
 		} catch (error) {
 			console.error('✗ Error:', error.message)
 			process.exit(1)
@@ -126,18 +126,18 @@ program
 	.option('--tag <tag>', 'Filter by tag')
 	.action(async (options) => {
 		await init()
-		let tokens
+		let secrets
 
 		if (options.search) {
-			tokens = storage.searchByKey(options.search)
+			secrets = storage.searchByKey(options.search)
 		} else if (options.tag) {
-			tokens = storage.searchByTag(options.tag)
+			secrets = storage.searchByTag(options.tag)
 		} else {
-			tokens = storage.getAll()
+			secrets = storage.getAll()
 		}
 
-		console.log(`Found ${tokens.length} token(s):`)
-		console.log(formatTokenList(tokens))
+		console.log(`Found ${secrets.length} token(s):`)
+		console.log(formatSecretList(secrets))
 	})
 
 program
@@ -145,14 +145,14 @@ program
 	.description('Show details of a specific token')
 	.action(async (key) => {
 		await init()
-		const token = storage.get(key)
+		const secret = storage.get(key)
 
-		if (!token) {
+		if (!secret) {
 			console.error(`✗ Token with key "${key}" not found`)
 			process.exit(1)
 		}
 
-		console.log(formatToken(token))
+		console.log(formatSecret(secret))
 	})
 
 program
@@ -177,9 +177,9 @@ program
 		}
 
 		try {
-			const token = await storage.update(key, updates)
+			const secret = await storage.update(key, updates)
 			console.log('✓ Token updated successfully')
-			console.log(formatToken(token))
+			console.log(formatSecret(secret))
 		} catch (error) {
 			console.error('✗ Error:', error.message)
 			process.exit(1)
@@ -254,19 +254,19 @@ program
 		const commandArgs = process.argv.slice(dashDashIndex + 1)
 
 		await init()
-		const token = storage.getBySid(sid)
+		const secret = storage.getBySid(sid)
 
-		if (!token) {
+		if (!secret) {
 			console.error(`✗ Token with sid "${sid}" not found`)
 			process.exit(1)
 		}
 
-		if (!token.env) {
-			console.error(`✗ Token "${token.key}" has no env variable name configured`)
+		if (!secret.env) {
+			console.error(`✗ Token "${secret.key}" has no env variable name configured`)
 			process.exit(1)
 		}
 
-		const env = { ...process.env, [token.env]: token.token }
+		const env = { ...process.env, [secret.env]: secret.token }
 
 		const child = spawn(commandArgs[0], commandArgs.slice(1), {
 			env,
@@ -414,7 +414,7 @@ program
 		await config.init()
 		try {
 			const { token, id } = await ensureGistConfig(config)
-			const storageInstance = new TokenStorage()
+			const storageInstance = new SecretStorage()
 			await storageInstance.init()
 			const tokensContent = await fs.readFile(storageInstance.dataFile, 'utf8')
 			await gistService.upload(token, id, tokensContent, version)
@@ -434,7 +434,7 @@ program
 		try {
 			const { token, id } = await ensureGistConfig(config)
 			const content = await gistService.download(token, id)
-			const storageInstance = new TokenStorage()
+			const storageInstance = new SecretStorage()
 			await storageInstance.init()
 			await fs.writeFile(storageInstance.dataFile, content, 'utf8')
 			console.log(`✓ Downloaded tokens.json from gist ${id}`)
