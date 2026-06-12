@@ -10,7 +10,8 @@ function HelpPanel({ onClose }) {
     { key: 'c', description: 'Create new token' },
     { key: 'e', description: 'Edit selected token' },
     { key: 'dd', description: 'Delete selected token' },
-    { key: 'y', description: 'Copy sid to clipboard' },
+    { key: 'y', description: 'Copy token value to clipboard' },
+    { key: 'Y', description: 'Copy sid to clipboard' },
     { key: 'f', description: 'Filter tokens' },
     { key: '?', description: 'Show/hide this help' },
     { key: 'q / Ctrl+C', description: 'Quit application' }

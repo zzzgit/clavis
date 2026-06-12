@@ -91,6 +91,17 @@ function App({ secrets: initialSecrets, storage }) {
     }
 
     if (input === 'y' && selectedSecret) {
+      const textToCopy = selectedSecret.token;
+      const success = copyToClipboard(textToCopy);
+      if (success) {
+        showWarning(`Copied token "${selectedSecret.key}" to clipboard`, 'success', 'Copied');
+      } else {
+        showWarning('Failed to copy to clipboard', 'error', 'Error');
+      }
+      return;
+    }
+
+    if (input === 'Y' && key.shift && selectedSecret) {
       if (selectedSecret.sid === null || selectedSecret.sid === undefined) {
         showWarning('No sid to copy', 'warning', 'Warning');
         return;
