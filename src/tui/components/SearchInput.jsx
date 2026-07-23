@@ -1,99 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Text, useInput } from 'ink';
-import TextInput from 'ink-text-input';
+import { createSignal } from 'solid-js'
+import { useKeyboard } from '@opentui/solid'
+import { theme } from '../theme.js'
 
-function SearchInput({ initialValue = '', onSearch, onCancel }) {
-  const [searchValue, setSearchValue] = useState(initialValue);
-  const [isActive, setIsActive] = useState(true);
-
-  const handleSearch = useCallback(() => {
-    onSearch(searchValue);
-  }, [searchValue, onSearch]);
-
-  const handleClear = useCallback(() => {
-    setSearchValue('');
-    onSearch('');
-  }, [onSearch]);
-
-  useInput((input, key) => {
-    if (key.escape) {
-      onCancel();
-      return;
-    }
-
-    if (key.return) {
-      handleSearch();
-      return;
-    }
-
-    if (key.ctrl && input === 'u') {
-      handleClear();
-      return;
-    }
-  });
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchValue !== initialValue) {
-        onSearch(searchValue);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchValue, initialValue, onSearch]);
-
-  return (
-    <Box
-      borderStyle="round"
-      borderColor="blue"
-      padding={2}
-      flexDirection="column"
-      flexGrow={1}
-    >
-      <Box marginBottom={2}>
-        <Text bold color="blue">
-          🔍 Search Tokens
-        </Text>
-      </Box>
-      
-      <Box marginBottom={2}>
-        <Text>Search by key, tag, or comment:</Text>
-      </Box>
-      
-      <Box marginBottom={2}>
-        <Box marginRight={2}>
-          <Text color="green">›</Text>
-        </Box>
-        <Box flexGrow={1}>
-          <TextInput
-            value={searchValue}
-            onChange={setSearchValue}
-            placeholder="Type to search..."
-            showCursor
-            focus={isActive}
-          />
-        </Box>
-      </Box>
-      
-      <Box marginBottom={2}>
-        <Text dimColor>
-          Examples: "github", "api.", "prod", "2026", "database"
-        </Text>
-      </Box>
-      
-      <Box marginBottom={2}>
-        <Text dimColor>
-          Supports fuzzy search: "gh" matches "github", "db" matches "database"
-        </Text>
-      </Box>
-      
-      <Box marginTop={2} borderStyle="single" borderColor="gray" padding={1}>
-        <Text dimColor>
-          Press [Enter] to search, [Ctrl+U] to clear, [Esc] to cancel
-        </Text>
-      </Box>
-    </Box>
-  );
+const SearchInput = (props) => {
+  const [value, setValue] = createSignal(props.initialValue || '')
+  const submit = () => { props.onSearch(value()); props.onCancel() }
+  useKeyboard((key) => {
+    if (key.name === 'escape') props.onCancel()
+    else if (key.name === 'return' || key.name === 'enter') submit()
+    else if (key.ctrl && key.name === 'u') { setValue(''); props.onSearch('') }
+  })
+  return <box border borderStyle="rounded" borderColor={theme.accent} padding={2} flexDirection="column" flexGrow={1}>
+    <text fg={theme.accent} bold>Search Tokens</text><text fg={theme.text} marginTop={1}>Search by key, tag, or comment:</text>
+    <box marginTop={1}><text fg={theme.accent}>› </text><input value={value()} onInput={(next) => { setValue(next); props.onSearch(next) }} placeholder="Type to search..." focused /></box>
+    <text fg={theme.muted} marginTop={1}>Press [Enter] to finish, [Ctrl+U] to clear, [Esc] to cancel</text>
+  </box>
 }
-
-export default SearchInput;
+export default SearchInput

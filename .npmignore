@@ -1,10 +1,27 @@
+# Sensitive and local files
 .env
 .env.*
-node_modules/
-coverage/
+data/
 *.log
 .DS_Store
 .vscode/
 .idea/
-dist/
+
+# Development dependencies and generated test output
+node_modules/
+coverage/
 build/
+tests/
+src/
+
+# Development-only project files
+.editorconfig
+claude.md
+COMPONENTS.md
+MIGRATION.md
+example-usage.sh
+jest.config.js
+tsup.config.js
+
+# Keep runtime bundles, but omit source maps
+/dist/**/*.map

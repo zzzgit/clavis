@@ -1,39 +1,18 @@
-import React from 'react';
-import { Box, Text } from 'ink';
+import { theme } from '../theme.js'
 
-function Header({ tokenCount, expiredCount = 0, warningCount = 0, filter }) {
-  
-  return (
-    <Box
-      borderStyle="round"
-      borderColor="blue"
-      paddingX={1}
-      paddingY={0}
-      flexDirection="column"
-      width="100%"
-    >
-      <Box justifyContent="space-between" width="100%">
-        <Text bold color="blue">
-          Clavis Token Manager v1.0.0
-        </Text>
-        <Text>
-          {filter ? (
-            <Text color="yellow">Filter: {filter}</Text>
-          ) : (
-            <Text color="white">
-              {tokenCount} tokens
-              {expiredCount > 0 && (
-                <Text color="red"> ({expiredCount} expired)</Text>
-              )}
-              {tokenCount > 0 && warningCount > 0 && (
-                <Text color="yellow">, {warningCount} expiring</Text>
-              )}
-            </Text>
-          )}
-        </Text>
-      </Box>
-    </Box>
-  );
-}
+const Header = (props) => (
+  <box border borderStyle="rounded" borderColor={theme.accent} paddingX={1} height={3} flexDirection="column">
+    <box flexDirection="row" justifyContent="space-between">
+      <text fg={theme.accent} bold>Clavis Token Manager v1.0.0</text>
+      <text fg={theme.text}>
+        {props.filter ? <span fg={theme.warning}>Filter: {props.filter}</span> : <>
+          {props.tokenCount} tokens
+          {props.expiredCount > 0 && <span fg={theme.danger}> ({props.expiredCount} expired)</span>}
+          {props.warningCount > 0 && <span fg={theme.warning}>, {props.warningCount} expiring</span>}
+        </>}
+      </text>
+    </box>
+  </box>
+)
 
-export default Header;
+export default Header

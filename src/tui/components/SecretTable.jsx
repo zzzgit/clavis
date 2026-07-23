@@ -1,204 +1,25 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Text, useStdout } from 'ink';
-import {
-  getSecretStatus,
-  truncateKey,
-  truncateTag,
-  formatExpiration,
-  formatCreatedAt,
-  previewToken,
-  calculateColumnWidths
-} from '../utils/format.js';
+import { createMemo } from 'solid-js'
+import { useTerminalDimensions } from '@opentui/solid'
+import { theme } from '../theme.js'
+import { getSecretStatus, truncateKey, truncateTag, formatExpiration, formatCreatedAt, previewToken, calculateColumnWidths } from '../utils/format.js'
 
-function SecretTable({ tokens, selectedIndex, onSelect }) {
-  const { stdout } = useStdout()
-  const [columnWidths, setColumnWidths] = useState(() => {
-    const terminalWidth = stdout.columns || 80;
-    return calculateColumnWidths(terminalWidth);
-  });
+const SecretTable = (props) => {
+  const dimensions = useTerminalDimensions()
+  const widths = createMemo(() => calculateColumnWidths(dimensions().width || 80))
+  const visibleRows = createMemo(() => Math.max(5, dimensions().height - 10))
+  const startIndex = createMemo(() => Math.max(0, props.selectedIndex - visibleRows() + 1))
+  const visibleTokens = createMemo(() => props.tokens.slice(startIndex(), startIndex() + visibleRows()))
 
-  const terminalHeight = stdout.rows || 24
-  const availableHeight = Math.max(terminalHeight - 6, 10)
+  if (props.tokens.length === 0) return <box border borderStyle="rounded" borderColor={theme.muted} padding={2} flexGrow={1} justifyContent="center" alignItems="center"><text fg={theme.warning}>No secrets found. Press 'q' to quit.</text></box>
 
-  const { startIndex, endIndex } = useMemo(() => {
-    if (tokens.length === 0) {
-      return { startIndex: 0, endIndex: 0 }
-    }
-
-    const tableHeight = Math.max(availableHeight - 4, 5)
-
-    let startIndex = 0
-    if (selectedIndex >= startIndex + tableHeight) {
-      startIndex = selectedIndex - tableHeight + 1
-    } else if (selectedIndex < startIndex) {
-      startIndex = selectedIndex
-    }
-
-    startIndex = Math.max(0, startIndex)
-
-    const endIndex = Math.min(startIndex + tableHeight, tokens.length)
-
-    return { startIndex, endIndex }
-  }, [tokens.length, selectedIndex, availableHeight])
-
-  useEffect(() => {
-    const handleResize = () => {
-      const terminalWidth = stdout.columns || 80;
-      setColumnWidths(calculateColumnWidths(terminalWidth));
-    };
-
-    stdout.on('resize', handleResize);
-    return () => {
-      stdout.off('resize', handleResize);
-    };
-  }, [stdout]);
-
-  if (tokens.length === 0) {
-    return (
-      <Box
-        borderStyle="round"
-        borderColor="gray"
-        padding={2}
-        justifyContent="center"
-        alignItems="center"
-        flexGrow={1}
-      >
-        <Text color="yellow">No secrets found. Press 'q' to quit.</Text>
-      </Box>
-    );
+  const header = () => {
+    const width = widths()
+    return <box flexDirection="row"><text fg={theme.accent} bold width={width.key}>Key</text><text> </text><text fg={theme.accent} bold width={width.tag}>Tag</text><text> </text><text fg={theme.accent} bold width={width.expires}>Expires</text><text> </text><text fg={theme.accent} bold width={width.created}>Created</text><text> </text><text fg={theme.accent} bold width={width.token}>Token Preview</text></box>
   }
-
-  const renderHeader = () => {
-    const { key, tag, expires, created, token } = columnWidths;
-
-    return (
-      <Box>
-        <Text
-          width={key}
-          bold
-          color="cyan"
-        >
-          {'Key'.padEnd(key)}
-        </Text>
-        <Text> </Text>
-        <Text
-          width={tag}
-          bold
-          color="cyan"
-        >
-          {'Tag'.padEnd(tag)}
-        </Text>
-        <Text> </Text>
-        <Text
-          width={expires}
-          bold
-          color="cyan"
-        >
-          {'Expires'.padEnd(expires)}
-        </Text>
-        <Text> </Text>
-        <Text
-          width={created}
-          bold
-          color="cyan"
-        >
-          {'Created'.padEnd(created)}
-        </Text>
-        <Text> </Text>
-        <Text
-          width={token}
-          bold
-          color="cyan"
-        >
-          {'Token Preview'.padEnd(token)}
-        </Text>
-      </Box>
-    );
-  };
-
-  const renderRow = (secret, index) => {
-    const isSelected = index === selectedIndex;
-    const status = getSecretStatus(secret);
-    const { key, tag, expires, created, token: tokenWidth } = columnWidths;
-
-    return (
-      <Box backgroundColor={isSelected ? 'blue' : undefined}>
-        <Text
-          width={key}
-          color={isSelected ? 'white' : 'white'}
-        >
-          {truncateKey(secret.key, key)}
-        </Text>
-        <Text> </Text>
-
-        <Text
-          width={tag}
-          color={isSelected ? 'white' : 'cyan'}
-        >
-          {truncateTag(secret.tag, tag)}
-        </Text>
-        <Text> </Text>
-
-        <Text
-          width={expires}
-          color={isSelected ? 'white' : status.color}
-        >
-          {formatExpiration(secret.expiration, expires)}
-        </Text>
-        <Text> </Text>
-
-        <Text
-          width={created}
-          color={isSelected ? 'white' : 'gray'}
-        >
-          {formatCreatedAt(secret.createdAt, created)}
-        </Text>
-        <Text> </Text>
-
-        <Text
-          width={tokenWidth}
-          color={isSelected ? 'white' : 'gray'}
-        >
-          {previewToken(secret.token, tokenWidth)}
-        </Text>
-      </Box>
-    );
-  };
-
-  const visibleSecrets = tokens.slice(startIndex, endIndex)
-
-  return (
-    <Box flexDirection="column" height={availableHeight}>
-      <Box marginBottom={1}>
-        {renderHeader()}
-      </Box>
-
-      <Box flexDirection="column" flexGrow={1} overflow="hidden">
-        {visibleSecrets.map((secret, index) => {
-          const actualIndex = startIndex + index
-          return (
-            <Box key={secret.key} marginBottom={0}>
-              {renderRow(secret, actualIndex)}
-            </Box>
-          )
-        })}
-
-        {tokens.length > 0 && (
-          <Box marginTop={0} justifyContent="space-between">
-            <Text dimColor>
-              {startIndex > 0 ? '↑ More above' : ''}
-            </Text>
-            <Text dimColor>
-              Showing {startIndex + 1}-{endIndex} of {tokens.length}
-            </Text>
-            <Text dimColor>
-              {endIndex < tokens.length ? '↓ More below' : ''}
-            </Text>
-          </Box>
-        )}
-      </Box>
-    </Box>
-  );
+  const row = (secret, index) => {
+    const width = widths(); const selected = index === props.selectedIndex; const status = getSecretStatus(secret)
+    return <box flexDirection="row" backgroundColor={selected ? theme.focusBackground : undefined}><text fg={selected ? theme.focusText : theme.text} width={width.key}>{truncateKey(secret.key, width.key)}</text><text> </text><text fg={selected ? theme.focusText : theme.accent} width={width.tag}>{truncateTag(secret.tag, width.tag)}</text><text> </text><text fg={selected ? theme.focusText : status.color} width={width.expires}>{formatExpiration(secret.expiration, width.expires)}</text><text> </text><text fg={selected ? theme.focusText : theme.muted} width={width.created}>{formatCreatedAt(secret.createdAt, width.created)}</text><text> </text><text fg={selected ? theme.focusText : theme.muted} width={width.token}>{previewToken(secret.token, width.token)}</text></box>
+  }
+  return <box flexDirection="column" flexGrow={1} overflow="hidden"><box marginBottom={1}>{header()}</box>{visibleTokens().map((secret, index) => row(secret, startIndex() + index))}<box flexDirection="row" justifyContent="space-between"><text dim>{startIndex() > 0 ? '↑ More above' : ''}</text><text dim>Showing {startIndex() + 1}-{Math.min(startIndex() + visibleTokens().length, props.tokens.length)} of {props.tokens.length}</text><text dim>{startIndex() + visibleTokens().length < props.tokens.length ? '↓ More below' : ''}</text></box></box>
 }
-
-export default SecretTable;
+export default SecretTable

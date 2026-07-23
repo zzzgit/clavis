@@ -1,8 +1,9 @@
 import { format, differenceInDays, parseISO } from 'date-fns'
+import { theme } from '../theme.js'
 
 export function getSecretStatus(secret) {
 	if (!secret.expiration) {
-		return { char: '✓', color: 'green', label: 'Active' }
+		return { char: '✓', color: theme.success, label: 'Active' }
 	}
 
 	const expDate = parseISO(secret.expiration)
@@ -10,14 +11,14 @@ export function getSecretStatus(secret) {
 	const diffDays = differenceInDays(expDate, now)
 
 	if (diffDays < 0) {
-		return { char: '✗', color: 'red', label: 'Expired' }
+		return { char: '✗', color: theme.danger, label: 'Expired' }
 	}
 
 	if (diffDays <= 7) {
-		return { char: '!', color: 'yellow', label: `Expires in ${diffDays}d` }
+		return { char: '!', color: theme.warning, label: `Expires in ${diffDays}d` }
 	}
 
-	return { char: '✓', color: 'green', label: 'Active' }
+	return { char: '✓', color: theme.success, label: 'Active' }
 }
 
 export function truncateKey(key, width) {

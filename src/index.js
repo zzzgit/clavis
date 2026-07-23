@@ -4,6 +4,7 @@ import { program } from 'commander'
 import { createInterface } from 'readline'
 import { spawn } from 'child_process'
 import { createRequire } from 'module'
+import { fileURLToPath } from 'url'
 import { promises as fs } from 'fs'
 import SecretStorage from './services/SecretStorage.js'
 import ConfigService from './services/ConfigService.js'
@@ -20,6 +21,22 @@ const readLine = (prompt) => new Promise((resolve) => {
 })
 
 const storage = new SecretStorage()
+
+/** Starts the TUI with Bun when the CLI was launched by Node.js. */
+const startTUIWithBun = () => new Promise((resolve, reject) => {
+	const entryFile = fileURLToPath(import.meta.url)
+	const child = spawn('bun', ['--preload', '@opentui/solid/preload', entryFile, ...process.argv.slice(2)], { stdio: 'inherit' })
+
+	child.on('error', (error) => {
+		if (error.code === 'ENOENT') reject(new Error('Bun is required for the TUI. Install it from https://bun.sh.'))
+		else reject(error)
+	})
+	child.on('exit', (code, signal) => {
+		if (signal) reject(new Error(`Bun TUI process exited from signal ${signal}`))
+		else if (code === 0) resolve()
+		else reject(new Error(`Bun TUI process exited with code ${code}`))
+	})
+})
 
 /** Read a password from stdin, hiding input when running in a TTY */
 const readPassword = (prompt) => new Promise((resolve) => {
@@ -227,16 +244,15 @@ program
 program
 	.command('tui')
 	.description('Start interactive TUI interface')
-	.action(async () => {
-		try {
-			// Import the React TUI module
-			const startTUI = (await import('./tui/index.js')).default
-			await startTUI()
-		} catch (error) {
+	.action(() => {
+		const runTUI = typeof Bun === 'undefined'
+			? startTUIWithBun
+			: () => import('./tui/index.js').then(({ default: startTUI }) => startTUI())
+
+		return runTUI().catch((error) => {
 			console.error('Failed to start TUI:', error.message)
-			console.error('Make sure all dependencies are installed: npm install')
-			process.exit(1)
-		}
+			process.exitCode = 1
+		})
 	})
 
 program

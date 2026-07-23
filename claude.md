@@ -55,9 +55,9 @@ Clavis is a token management system with a TUI interface. The codebase uses mode
 ## Testing & Quality
 - Run tests before committing changes
 - Use the following commands:
-  - `npm test` - Run test suite
-  - `npm run lint` - Check code style
-  - `npm run format` - Format code
+  - `npm test` - Run the full test suite, including the TUI smoke test
+  - `npm run test:tui` - Run the Bun/OpenTUI smoke test
+  - `npm run build` - Build production output
 - Ensure all tests pass before considering work complete
 
 ## Git Commit Guidelines
@@ -70,9 +70,10 @@ Clavis is a token management system with a TUI interface. The codebase uses mode
 ```
 clavis/
 ├── src/
-│   ├── tui/            # React-based TUI application
-│   │   ├── index.js    # TUI entry point
-│   │   └── components/ # React components
+│   ├── tui/            # Solid.js/OpenTUI application
+│   │   ├── index.js     # TUI entry point
+│   │   ├── theme.js     # Black-background color tokens
+│   │   └── components/  # Solid.js components
 │   └── services/       # Business logic and storage
 ├── tests/              # Test files
 ├── package.json        # Project dependencies
@@ -134,17 +135,17 @@ try {
 
 ## Quick Reference Commands
 ```bash
-# Check code style
-npm run lint
+# Build production output
+npm run build
 
-# Format code
-npm run format
-
-# Run tests
+# Run all tests
 npm test
 
-# Start TUI application
-npm run dev:tui
+# Run the OpenTUI smoke test only
+npm run test:tui
+
+# Start TUI application (requires Bun)
+npm run go
 ```
 
 ## Gist Sync Commands

@@ -1,165 +1,74 @@
 # TUI Components Documentation
 
-This document describes the React components used in the Clavis TUI (Terminal User Interface).
-
 ## Overview
 
-The TUI uses React with the Ink library to create interactive terminal interfaces. Components are located in `src/tui/components/`.
+Clavis uses Solid.js components rendered by OpenTUI. The TUI runs with Bun because OpenTUI requires Bun's native FFI runtime. `bunfig.toml` preloads `@opentui/solid/preload`, which is required for Solid lifecycle hooks and keyboard handlers to work under Bun.
 
-## Dialog Components
+Components are located in `src/tui/components/`. Shared black-background color tokens are defined in `src/tui/theme.js`.
 
-### ConfirmDialog - Interactive Confirmation Dialog
+## Main Components
 
-**Purpose**: Display a modal confirmation dialog that requires user input before proceeding with a potentially dangerous action.
+| Component | Responsibility |
+|---|---|
+| `App.jsx` | TUI state, keyboard routing, secret CRUD actions, and view selection. |
+| `Header.jsx` | Token count, active filter, and expiration summary. |
+| `SecretTable.jsx` | Responsive token table and selected-row display. |
+| `Footer.jsx` | Context-sensitive status and shortcut help. |
+| `CreateForm.jsx` | Creates a token from editable fields. |
+| `EditForm.jsx` | Edits an existing token. |
+| `SearchInput.jsx` | Filters tokens by key, tag, or comment. |
+| `ConfirmDialog.jsx` | Confirms destructive actions. |
+| `Warning.jsx` | Displays auto-closing success, warning, error, or information messages. |
+| `HelpPanel.jsx` | Lists available table-view shortcuts. |
 
-**Location**: `src/tui/components/ConfirmDialog.jsx`
+## Keyboard Controls
 
-**Props**:
-- `message` (string, required): The confirmation message to display
-- `title` (string, default: "Confirm Action"): Dialog title
-- `confirmText` (string, default: "Yes"): Text for confirm button
-- `cancelText` (string, default: "No"): Text for cancel button
-- `onConfirm` (function, required): Callback when user confirms
-- `onCancel` (function, required): Callback when user cancels
-- `type` (string, default: "warning"): Dialog type - "warning", "danger", or "info"
+### Token table
 
-**Visual Types**:
-- `warning` (default): Yellow border, ⚠️ icon
-- `danger`: Red border, ❌ icon
-- `info`: Blue border, ℹ️ icon
+| Key | Action |
+|---|---|
+| `↑` / `k` | Move selection up |
+| `↓` / `j` | Move selection down |
+| `Home` / `g` | Select the first token |
+| `End` / `G` | Select the last token |
+| `c` | Create a token |
+| `e` | Edit the selected token |
+| `dd` | Delete the selected token |
+| `f` / `/` | Search tokens |
+| `y` / `Y` | Copy the selected token / SID |
+| `?` | Open help |
+| `q` / `Ctrl+C` | Exit |
 
-**Keyboard Controls**:
-- `←` or `h`: Select previous option
-- `→` or `l`: Select next option
-- `Enter`: Confirm selected option
-- `Esc`: Cancel dialog
+### Forms and dialogs
 
-**Usage Example**:
-```jsx
-<ConfirmDialog
-  message="Delete secret 'api.github.production'? This action cannot be undone."
-  title="Delete Secret"
-  type="danger"
-  onConfirm={handleDelete}
-  onCancel={handleCancel}
-/>
+| View | Controls |
+|---|---|
+| Create / edit form | `Tab` or `Shift+Tab` changes field; `Enter` saves; `Esc` cancels. |
+| Search | `Enter` finishes; `Ctrl+U` clears; `Esc` cancels. |
+| Confirmation | `←` / `h` and `→` / `l` select; `Enter` confirms; `Esc` cancels. |
+| Notification | `Space` or `Esc` dismisses. |
+
+## Theme
+
+The current theme targets black terminal backgrounds:
+
+- **Cyan**: application accent, headings, and selected-row background.
+- **Black on cyan**: text in the selected row for high contrast.
+- **Green**: successful operations and active tokens.
+- **Yellow**: warnings, expiring tokens, and confirmations.
+- **Red**: errors and expired tokens.
+- **White / gray**: primary and secondary text.
+
+## Testing
+
+`tests/tui/tui-smoke.test.js` launches a Bun-based OpenTUI test renderer and checks that the TUI mounts, responds to `c`, and exits with `q`. Run it directly with:
+
+```bash
+npm run test:tui
 ```
 
-**When to Use**:
-- Deleting secrets or data
-- Overwriting existing data
-- Performing irreversible actions
-- Any operation that requires explicit user consent
+It also runs as part of the full test suite:
 
-### Warning - Notification/Alert Component
-
-**Purpose**: Display non-blocking notifications, alerts, or feedback messages to the user.
-
-**Location**: `src/tui/components/Warning.jsx`
-
-**Props**:
-- `message` (string, required): The message to display
-- `title` (string, default: "Warning"): Notification title
-- `type` (string, default: "warning"): Message type - "error", "warning", "success", or "info"
-- `autoClose` (boolean, default: false): Whether to automatically close after duration
-- `duration` (number, default: 3000): Auto-close duration in milliseconds
-- `onClose` (function): Callback when notification is closed
-
-**Visual Types**:
-- `error`: Red border/background, ❌ icon
-- `warning` (default): Yellow border/background, ⚠️ icon
-- `success`: Green border/background, ✅ icon
-- `info`: Blue border/background, ℹ️ icon
-
-**Keyboard Controls**:
-- `Space` or `Esc`: Dismiss notification
-
-**Usage Example**:
-```jsx
-// Success notification
-<Warning
-  message="Secret created successfully"
-  title="Success"
-  type="success"
-  autoClose={true}
-  duration={3000}
-  onClose={hideNotification}
-/>
-
-// Error notification
-<Warning
-  message="Error saving secret: Invalid token format"
-  title="Error"
-  type="error"
-  onClose={hideNotification}
-/>
+```bash
+npm test
 ```
-
-**When to Use**:
-- Operation success feedback
-- Error messages
-- Warning messages
-- Informational notifications
-- Any non-critical feedback that doesn't require user action
-
-## Component Comparison
-
-| Aspect | ConfirmDialog | Warning |
-|--------|--------------|---------|
-| **Purpose** | User decision required | Information display only |
-| **Interaction** | Blocking (must respond) | Non-blocking |
-| **User Action** | Required (choose option) | Optional (dismiss) |
-| **Auto-close** | Never | Configurable |
-| **Return Value** | User choice (confirm/cancel) | None (notification only) |
-| **Use Case** | Dangerous operations | Feedback/notifications |
-
-## Integration in App.jsx
-
-Both components are integrated into the main App component:
-
-### ConfirmDialog Usage
-Used for secret deletion confirmation. The dialog is triggered by double-tapping `d` (`dd`) within 500ms in the main secret list view:
-```jsx
-{showDeleteConfirm && (
-  <ConfirmDialog
-    message={`Delete secret "${selectedSecret?.key}"? This action cannot be undone.`}
-    onConfirm={handleDeleteSecret}
-    onCancel={handleCancelDelete}
-  />
-)}
-```
-
-### Warning Usage
-Used for operation feedback through the `showWarning` helper:
-```javascript
-// Show success message
-showWarning('Secret created successfully', 'success', 'Success');
-
-// Show error message
-showWarning(`Error saving secret: ${error.message}`, 'error', 'Error');
-```
-
-## Design Principles
-
-1. **Separation of Concerns**: ConfirmDialog for decisions, Warning for notifications
-2. **Consistent UX**: Both components follow the same visual language and keyboard shortcuts
-3. **Progressive Disclosure**: Warning can auto-close, ConfirmDialog requires explicit action
-4. **Accessibility**: Keyboard navigation support for both components
-
-## Extending Components
-
-### Adding New Dialog Types
-To add a new type to ConfirmDialog:
-1. Add the type to the `getBorderColor()`, `getTitleColor()`, and `getIcon()` functions
-2. Update prop validation if needed
-
-### Customizing Warning
-The Warning component supports custom durations, auto-close behavior, and visual styles through props.
-
-## Best Practices
-
-1. **Use ConfirmDialog sparingly** - Only for truly dangerous operations
-2. **Keep Warning messages concise** - Users should be able to read them quickly
-3. **Use appropriate types** - Match the visual style to the message severity
-4. **Consider auto-close** - For success messages, auto-close reduces clutter
-5. **Provide keyboard alternatives** - Always support keyboard navigation

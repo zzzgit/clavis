@@ -140,12 +140,20 @@ Secrets are stored in `data/tokens.json` in the project directory. The file is a
 
 Clavis includes a Terminal User Interface (TUI) for interactive token management:
 
+OpenTUI uses Bun's native FFI runtime. Install Bun first if it is not already available:
+
 ```bash
-npm run dev:tui
+curl -fsSL https://bun.sh/install | bash
+```
+
+Then start the TUI with the normal CLI command. If Bun is installed, Clavis automatically relaunches the TUI with Bun:
+
+```bash
+clavis tui
 ```
 
 ### TUI Components
-The TUI uses React components with the Ink library. See [COMPONENTS.md](COMPONENTS.md) for detailed documentation on:
+The TUI uses Solid.js components rendered by OpenTUI. See [COMPONENTS.md](COMPONENTS.md) for detailed documentation on:
 - **ConfirmDialog**: Interactive confirmation dialogs for dangerous operations
 - **Warning**: Notification components for feedback and error messages
 - Other TUI components and their usage
@@ -158,11 +166,12 @@ src/
 ├── index.js          # CLI entry point
 ├── tui/              # Terminal User Interface
 │   ├── index.js      # TUI entry point
-│   ├── components/   # React components
+│   ├── components/   # Solid.js/OpenTUI components
 │   │   ├── App.jsx
 │   │   ├── ConfirmDialog.jsx
 │   │   ├── Warning.jsx
 │   │   └── ...
+│   ├── theme.js      # Shared terminal color tokens
 │   └── utils/        # TUI utilities
 ├── models/
 │   └── Secret.js      # Secret data model
@@ -172,10 +181,17 @@ src/
     └── validators.js # Input validation
 ```
 
-### Running Tests
+### TUI Testing
+
 ```bash
+# Run all tests, including the Bun/OpenTUI smoke test
 npm test
+
+# Run only the TUI smoke test
+npm run test:tui
 ```
+
+The TUI smoke test verifies that the interface mounts and its create and quit shortcuts work.
 
 ## License
 

@@ -1,142 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { Box, Text, useInput } from 'ink'
-import TextInput from 'ink-text-input'
-import EnvVarSelector from './EnvVarSelector.jsx'
+import { createSignal } from 'solid-js'
+import { useKeyboard } from '@opentui/solid'
+import { theme } from '../theme.js'
 
-function CreateForm({ onSave, onCancel, onOpenEnvSelector, pendingEnvVar, isSelectingEnvVar, onEnvVarSelected, onEnvVarSelectorCancel, availableHeight }) {
-  const [formData, setFormData] = useState({
-    key: '',
-    token: '',
-    expiration: '',
-    tag: '',
-    comment: '',
-    env: ''
-  });
-
-  const [activeField, setActiveField] = useState(0);
-  const fields = ['key', 'token', 'expiration', 'tag', 'comment', 'env'];
-  
-  const handleSave = useCallback(() => {
-    const newToken = {
-      key: formData.key.trim(),
-      token: formData.token.trim(),
-      expiration: formData.expiration.trim() || null,
-      tag: formData.tag.trim() || '',
-      comment: formData.comment.trim() || '',
-      env: formData.env.trim() || ''
-    };
-    
-    if (!newToken.key || !newToken.token) {
-      return;
-    }
-    
-    onSave(newToken);
-  }, [formData, onSave]);
-  
-  useInput((input, key) => {
-    if (isSelectingEnvVar) return;
-
-    if (key.escape) {
-      onCancel();
-      return;
-    }
-
-    if (key.return) {
-      handleSave();
-      return;
-    }
-
-    if (key.tab) {
-      if (key.shift) {
-        setActiveField(prev => (prev > 0 ? prev - 1 : fields.length - 1));
-      } else {
-        setActiveField(prev => (prev < fields.length - 1 ? prev + 1 : 0));
-      }
-      return;
-    }
-
-    if ((key.ctrl && input === 'e') || (fields[activeField] === 'env' && key.f2)) {
-      onOpenEnvSelector();
-      return;
-    }
-  });
-
-  useEffect(() => {
-    if (pendingEnvVar) {
-      handleChange('env', pendingEnvVar.value);
-    }
-  }, [pendingEnvVar]);
-
-  const handleChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-  
-  const renderField = (fieldName, label, placeholder = '', required = false) => {
-    const isActive = fields[activeField] === fieldName;
-    const hasValue = formData[fieldName].trim() !== '';
-    const isValid = required ? hasValue : true;
-
-    return (
-      <Box>
-        <Text width={12} color={isActive ? 'green' : (required && !isValid ? 'red' : 'white')}>
-          {label}:
-        </Text>
-        <Box marginLeft={2} flexGrow={1}>
-          {isActive ? (
-            <TextInput
-              value={formData[fieldName]}
-              onChange={(value) => handleChange(fieldName, value)}
-              placeholder={placeholder}
-              showCursor
-            />
-          ) : (
-            <Text color={hasValue ? 'white' : 'gray'}>
-              {formData[fieldName] || placeholder}
-            </Text>
-          )}
-        </Box>
-      </Box>
-    );
-  };
-  
-  if (isSelectingEnvVar) {
-    return (
-      <EnvVarSelector
-        onSelect={onEnvVarSelected}
-        onCancel={onEnvVarSelectorCancel}
-        availableHeight={availableHeight}
-      />
-    )
-  }
-
-  return (
-    <Box
-      borderStyle="round"
-      borderColor="blue"
-      paddingX={2}
-      paddingY={0}
-      flexDirection="column"
-      flexGrow={1}
-    >
-      <Box marginBottom={1}>
-        <Text bold color="blue">
-          Create New Token
-        </Text>
-      </Box>
-
-      <Box flexDirection="column">
-        {renderField('key', 'Key', 'Enter unique key', true)}
-        {renderField('token', 'Token', 'Enter token value', true)}
-        {renderField('expiration', 'Expiration', 'YYYY-MM-DD or empty')}
-        {renderField('tag', 'Tag', 'Optional category tag')}
-        {renderField('comment', 'Comment', 'Optional description')}
-        {renderField('env', 'Env Var', 'e.g., GITHUB_TOKEN, API_KEY')}
-      </Box>
-    </Box>
-  );
+const CreateForm = (props) => {
+  const fields = ['key', 'token', 'expiration', 'tag', 'comment', 'env']
+  const labels = { key: 'Key', token: 'Token', expiration: 'Expiration', tag: 'Tag', comment: 'Comment', env: 'Env Var' }
+  const [data, setData] = createSignal({ key: '', token: '', expiration: '', tag: '', comment: '', env: '' })
+  const [active, setActive] = createSignal(0)
+  const save = () => { const value = data(); if (value.key.trim() && value.token.trim()) props.onSave({ ...value, key: value.key.trim(), token: value.token.trim(), expiration: value.expiration.trim() || null }) }
+  useKeyboard((key) => {
+    if (key.name === 'escape') props.onCancel()
+    else if (key.name === 'return' || key.name === 'enter') save()
+    else if (key.name === 'tab') setActive((index) => (index + (key.shift ? fields.length - 1 : 1)) % fields.length)
+  })
+  return <box border borderStyle="rounded" borderColor={theme.accent} paddingX={2} flexDirection="column" flexGrow={1}><text fg={theme.accent} bold>Create New Token</text>{fields.map((field, index) => <box><text width={12} fg={active() === index ? theme.accent : theme.text}>{labels[field]}:</text><input value={data()[field]} onInput={(value) => setData({ ...data(), [field]: value })} focused={active() === index} placeholder={field === 'expiration' ? 'YYYY-MM-DD or empty' : ''} flexGrow={1} /></box>)}</box>
 }
-
-export default CreateForm;
+export default CreateForm
